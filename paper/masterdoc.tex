@@ -1,0 +1,122 @@
+\documentclass[titlepage, a4paper, 11pt]{scrartcl}
+
+%too much whitespace otherwise
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+
+% Grafik Pakete
+\usepackage{graphicx,hyperref,amssymb}
+
+% Ordner für Grafiken
+\graphicspath{ {./images/} }
+\usepackage{float}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Header and Footer
+\usepackage{fancyhdr}
+
+%bibtex
+\usepackage{cite}
+
+%code snippets
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+    language=HTML,
+    aboveskip=3mm,
+    belowskip=3mm,
+    showstringspaces=false,
+    columns=flexible,
+    basicstyle={\small\ttfamily},
+    numbers=none,
+    numberstyle=\tiny\color{gray},
+    keywordstyle=\color{blue},
+    commentstyle=\color{dkgreen},
+    stringstyle=\color{mauve},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=3
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Julius Neudecker, 2025850}
+\lhead{CEPH Cluster in containers}
+
+\title{Running a CEPH-Cluster on a containerized infrastructure}
+\subtitle{Use case: distributed mySQL-database}
+\author{Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de}}
+\date{January 2020}
+
+
+\begin{document}
+
+    \maketitle
+
+    \tableofcontents
+
+    \begin{abstract}
+        Setting up and operate a storage cluster with high availability is a complex task. Modern paradigmas like containerization
+        and orchestration are a way of abstracting away some complexity. However, running a cluster in a stateless and ephemeral
+        containerized environment poses some problems. In the following paper these problems are identified and scrutinized.
+        The use case will be a mySQL database, which will be stored on a CEPH cluster comprised of docker based daemons.
+    \end{abstract}
+
+    \section{Introduction}
+        %Managing a highly available storage cluster is not a trivial task. Apart from provisioning and monitoring the hardware,
+        %setting up multiple systems concurrently is a daunting task. Nowadays with provisioning tools like Salt, Chef or Puppet, 
+        %this is easier than ever. However
+
+        %Docker, stateless, ephemeral vs database, acid, ...
+        \subsection{CEPH Based storage cluster}
+
+        \subsection{Provisioning}
+
+        \subsection{Containerization}
+
+        \subsection{Databases}
+
+        \subsection{Scope of the problem}
+
+    \section{Setting up CEPH on Docker}
+
+        \subsection{System Architecture}
+
+        \subsection{Monitor Nodes}
+
+        \subsection{Object Storage Devices - OSD}
+        
+    \section{Setting up the database}
+
+        \subsection{Structure of mySQL}
+
+        \subsection{ACID}
+
+        \subsection{Problems with clusters}
+
+    \section{Performance}
+
+        \subsection{Integrity}
+
+        \subsection{Penalty}
+
+        \subsection{Administration}
+
+    \section{Conclusion}        
+
+    \bibliography{literature}        
+    \bibliographystyle{IEEEtran}
+
+\end{document}

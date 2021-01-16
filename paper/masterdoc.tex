@@ -86,23 +86,60 @@
         %do some explanation about single/multi tennant and cloud
 
         %put the whole paper in the context of IAAS; PAAS; SAAS
+
+        % make a remark on which particular issue this paper adresses, since there are way too many 
+        % to discuss and thats beyond this paper.
+
         \subsection{CEPH Based storage cluster}
 
-        \subsection{Provisioning}
+        % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
+        % quick rundown of MON, OSD, MDS, MGR
 
         \subsection{Containerization}
 
+        %whats a container and why is it nice compared to VM, etc.
+
+        \subsection{Deploying}        
+
+        % with/without container
+
         \subsection{Databases}
 
+        % quick rundown. Focussed on mySQl, mention of noSQL, etc.
+
         \subsection{Scope of the problem}
+
+        %related work: redhat document
 
     \section{Setting up CEPH on Docker}
 
         \subsection{System Architecture}
 
+        % three servers, one mon per machine
+        % different number of OSD per machine
+        % connected via docker network bridge
+
+            \subsubsection{CRUSH Fail mode}
+
+            % host vs osd in this case
+
+            % assuming all disks are _equally_ new, host mode would be appropriate in this setting
+            % in this particular case I would choose OSD level since disks are of different type, age and degradation
+
+            \subsubsection{Issue with Docker Image}
+
+            % refer to https://hub.docker.com/r/ceph/daemon 
+            % workaroung with either multiple OSD per container (undesireable)
+            % or different thing -> What are the implications anyway?
+
         \subsection{Monitor Nodes}
 
+        % even/odd number and therefore need for odd number of servers
+
         \subsection{Object Storage Devices - OSD}
+
+        % container config: different config options:
+        % essentially: how much work is abstracted away from container
         
     \section{Setting up the database}
 
@@ -110,15 +147,27 @@
 
         % why onfirst sight it might not be ideal to deploy mySQL on ceph because of distributed nature
         % and in case of Table > volume, etc.
+        % architecture: https://www.youtube.com/watch?v=CCqFqraSQQ0
 
         \subsection{ACID}
+
+        % Atomic, Consistent, Isolated, Durable
+        % https://www.youtube.com/watch?v=VRm2UMsFVz0
+
+        % whats acid and why is it important in this context
+        % is it actually an issue?!
+
+        % i.e. concurrent transactions
+        % example: bank account
 
         \subsection{Problems with clusters}
 
         %sharding and distribution techniques
         %splitting up of big files over OSD
 
-    \section{Performance}
+    \section{System Analysis}
+
+        % what are the key points to analyze in the context
 
         \subsection{disclamer bc of my setup}
 
@@ -129,13 +178,34 @@
 
         %distribution over PG, OSD, Hosts
 
+        %CEPH data striping:
+        % https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/1.2.3/html/red_hat_ceph_architecture/ceph_client_architecture#:~:text=Object%20Size%3A%20Objects%20in%20the,%2C%204MB%2C%20etc.).
+
         \subsection{Penalty}
 
+        %CephFS vs. Librados vs. native
+
         \subsection{Administration}
+
+        % Ceph Dashboard
+        % Grafana mySQL
+
+        \subsection{Tuning}
+
+        % KVM vs QEMU
+        % librbd vs krbd
+        % percona container in krbd module vs. mysql docker on librbd
+        % other tuning parametres
 
     \section{Conclusion}
     
         % make remark about performance tuning and tiering -> beyond the scope of this
+        % i.e. pool configs, stripe config, safety with crush config, etc.
+        % also there might be another interface for mySQL needs like RADOSGW or RBD
+        % but this would not be comparable to a single tennant mySQL application
+
+        %which implementation of radoes does the container use? krbd vs librbd
+        % remark to section with OSD in Architecture: "ease of use" vs "performance" tradeoff
 
     \bibliography{literature}        
     \bibliographystyle{IEEEtran}

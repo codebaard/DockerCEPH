@@ -79,7 +79,13 @@
         %setting up multiple systems concurrently is a daunting task. Nowadays with provisioning tools like Salt, Chef or Puppet, 
         %this is easier than ever. However
 
-        %Docker, stateless, ephemeral vs database, acid, ...
+        %Docker, stateless, ephemeral vs database, acid,
+
+        %do some sidestep to open stack and the RedHat Paper and why ceph blabla
+
+        %do some explanation about single/multi tennant and cloud
+
+        %put the whole paper in the context of IAAS; PAAS; SAAS
         \subsection{CEPH Based storage cluster}
 
         \subsection{Provisioning}
@@ -102,19 +108,34 @@
 
         \subsection{Structure of mySQL}
 
+        % why onfirst sight it might not be ideal to deploy mySQL on ceph because of distributed nature
+        % and in case of Table > volume, etc.
+
         \subsection{ACID}
 
         \subsection{Problems with clusters}
 
+        %sharding and distribution techniques
+        %splitting up of big files over OSD
+
     \section{Performance}
 
+        \subsection{disclamer bc of my setup}
+
+        % my setup is a multi tennant system, so take everything with a grain of salt.
+        % however: disks were single tennant
+
         \subsection{Integrity}
+
+        %distribution over PG, OSD, Hosts
 
         \subsection{Penalty}
 
         \subsection{Administration}
 
-    \section{Conclusion}        
+    \section{Conclusion}
+    
+        % make remark about performance tuning and tiering -> beyond the scope of this
 
     \bibliography{literature}        
     \bibliographystyle{IEEEtran}

@@ -107,7 +107,7 @@
 
         % quick rundown. Focussed on mySQl, mention of noSQL, etc.
 
-        \subsection{Scope of the problem}
+        \subsection{Scope of the problem and definition of research goal}
 
         %related work: redhat document
 
@@ -120,6 +120,9 @@
         % connected via docker network bridge
 
             \subsubsection{CRUSH Fail mode}
+
+            % elaborate different settings: Datacenter, Room, Row, Rack, Host, OSD...
+            % this has to be taken into consideration for providing the data on a global scale
 
             % host vs osd in this case
 
@@ -140,10 +143,14 @@
 
         % container config: different config options:
         % essentially: how much work is abstracted away from container
-        
-    \section{Setting up the database}
 
-        \subsection{Structure of mySQL}
+        \subsection{Metadata Service}
+
+        \subsection{Manager}
+        
+    \section{Database considerations}
+
+        \subsection{Architecture of mySQL}
 
         % why onfirst sight it might not be ideal to deploy mySQL on ceph because of distributed nature
         % and in case of Table > volume, etc.
@@ -165,6 +172,8 @@
         %sharding and distribution techniques
         %splitting up of big files over OSD
 
+        \subsection{Scope of this paper}
+
     \section{System Analysis}
 
         % what are the key points to analyze in the context
@@ -173,6 +182,8 @@
 
         % my setup is a multi tennant system, so take everything with a grain of salt.
         % however: disks were single tennant
+
+        %cannot setup "native" environment, make reasonable assumptions based on other research
 
         \subsection{Integrity}
 
@@ -185,10 +196,8 @@
 
         %CephFS vs. Librados vs. native
 
-        \subsection{Administration}
-
-        % Ceph Dashboard
-        % Grafana mySQL
+        % IOPS vs raw throughput
+        % the point is: does docker make a difference here?
 
         \subsection{Tuning}
 
@@ -197,7 +206,22 @@
         % percona container in krbd module vs. mysql docker on librbd
         % other tuning parametres
 
+        \subsection{Administration}
+
+        % Ceph Dashboard
+        % Grafana mySQL          
+
     \section{Conclusion}
+
+        \subsection{Advantages}
+
+        %in comparison to conventional (Host Level)
+
+        \subsection{Disadvantages}
+
+        %in comparison to conventional (Host Level)        
+
+        \subsection{Performance}
     
         % make remark about performance tuning and tiering -> beyond the scope of this
         % i.e. pool configs, stripe config, safety with crush config, etc.
@@ -206,6 +230,11 @@
 
         %which implementation of radoes does the container use? krbd vs librbd
         % remark to section with OSD in Architecture: "ease of use" vs "performance" tradeoff
+
+        \subsection{In Summary}
+
+        % summarize the keypoints in regard to the introduction
+      
 
     \bibliography{literature}        
     \bibliographystyle{IEEEtran}

@@ -122,35 +122,37 @@
         Being conceived by Sage Weil for his doctoral thesis\cite{weil2007ceph}, CEPH became part of the Linux Kernel in 2010 and was acquired
         by RedHat in 2014, CEPH is gaining popularity steadily since its introduction. \textbf{Source?}
 
-        \bigskip
-
         Another modern important concept which is increasingly shaping modern technology stacks is \textit{OS Level Virtualization} or
         \textit{containerization} as its colloquially called. This way of deploying applications decreased the complexity, which is
-        inherent to deploying several different applications to one single host machine. \textbf{[Since when?]}
-        One integral property of these \textit{containers} is that they are stateless and ephemeral. This means that they can 
-        \textit{by principle} be created and deleted according to momentary requirements. 
+        inherent to deploying several different applications to one single host machine. \textbf{[/Refactor this section /Since when?]}
 
-        \bigskip
+        Lastly, no storage solution exists without its use case. One major application, which requires flexible scaling are databases e.g. 
+        relational databases. To guarantee deterministic behaviour, database servers need to have specific properties to be suitable
+        as database providers. The underlying storage solution is one of these.
 
-        In this paper both technologies will be utilized to overcome some properties of these two technologies by merging them 
-        and thus using synergies \textbf{[really?]}
+        \subsection{Problem domains}
+            
+            Managing a highly available storage cluster is not a trivial task. Apart from provisioning and monitoring the hardware,
+            setting up multiple systems concurrently is a daunting task. Nowadays with infrastructure automation tools like Salt, Chef or Puppet, 
+            this is easier than ever. However, it can still be a tedious task to tweak the configuration of these tools
+            in order to make it work on a complex or diverse infrastructure. Especially in times when upates and EOL\footnote{End Of Life} events
+            create incompatibilites between working application stacks on any given host machine.
 
+            As for CEPH, this is especially true, since there are three major versions in production\cite{ceph releases}, as of early 2021.
+            Deprecated features and bugfixes create functional inconsistencies between major versions, hence it is a necessity to 
+            keep a cluster in production up to date. This necessitates constant modification and testing of the aforementioned automation tools.
 
-        \subsection{Scope of the problem}
-        %Managing a highly available storage cluster is not a trivial task. Apart from provisioning and monitoring the hardware,
-        %setting up multiple systems concurrently is a daunting task. Nowadays with provisioning tools like Salt, Chef or Puppet, 
-        %this is easier than ever. However
+            One way to isolate these problems is \textit{OS Level Virtualization}. By doing so, every application or application stack 
+            exists within a so called \textit{Container} and is therefore isolated from the host to a certain degree. 
+            One inherent issue in this context is that they are stateless and ephemeral. This means that they can 
+            \textit{by principle} be created and deleted according to momentary requirements. This process can be fully automated
+            by means of using an \textit{orchestration software}. Therefore the virtualized production environment has to be
+            configured in a way that allows is to provide the stability which is required for a storage engine.
 
-        %Docker, stateless, ephemeral vs database, acid,
-
-        %do some sidestep to open stack and the RedHat Paper and why ceph blabla
-
-        %do some explanation about single/multi tennant and cloud
- 
-        %put the whole paper in the context of IAAS; PAAS; SAAS
-
-        % make a remark on which particular issue this paper adresses, since there are way too many 
-        % to discuss and thats beyond this paper.
+            Trying to overcome the difficulties in setting up and manage a CEPH cluster with containerization might seem contradicting
+            at first sight. The following sections focus on the major problem and adresses these. There are many related topics such as
+            further optimizations for one or another particular use case. To adress these would go beyond the scope of this paper.
+            Nevertheless a brief outlook on further considerations will be provided at the end of chapter \ref*{analysis:tuning}.
 
         \subsection{CEPH Based storage cluster}
 
@@ -196,6 +198,8 @@
         % connected via docker network bridge
 
             \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}
+
+            %etcd (KV storage), pods, ceph, mysql
 
             \subsubsection{CRUSH Fail mode}
 
@@ -274,7 +278,7 @@
         % Grafana mySQL          
 
 
-        \subsection{Tuning}
+        \subsection{Tuning}\label{analysis:tuning}
 
         [very briefly]
 

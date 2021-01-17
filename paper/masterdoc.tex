@@ -55,8 +55,8 @@
 \rhead{Julius Neudecker, 2025850}
 \lhead{CEPH Cluster in containers}
 
-\title{Running a CEPH-Cluster on a containerized infrastructure}
-\subtitle{Use case: distributed mySQL-database}
+\title{Running a CEPH-Cluster from a containerized infrastructure}
+\subtitle{Use case: mySQL-database}
 \author{Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de}}
 \date{January 2020}
 
@@ -68,13 +68,62 @@
     \tableofcontents
 
     \begin{abstract}
-        Setting up and operate a storage cluster with high availability is a complex task. Modern paradigmas like containerization
-        and orchestration are a way of abstracting away some complexity. However, running a cluster in a stateless and ephemeral
-        containerized environment poses some problems. In the following paper these problems are identified and scrutinized.
-        The use case will be a mySQL database, which will be stored on a CEPH cluster comprised of docker based daemons.
+        %Setting up and operating a storage cluster with high availability is a complex task. 
+        %Modern paradigms like containerization and orchestration are a way of abstracting away some these complexities.
+        %However, running a fault resistant storage cluster in a stateless and ephemeral containerized environment might seem contradicting at first.
+        %Therefore the following paper will adress these problems, scrutinize performance and point out the inherent keypoints of this concept.
+        %To put this analysis into context, a mySQL database will act as a use case to create a frame of reference.
+
+        %An abstract summarizes, usually in one paragraph of 300 words or less, the major aspects of the entire paper in a prescribed sequence that includes: 
+        %1) the overall purpose of the study and the research problem(s) you investigated; 
+        %2) the basic design of the study; 
+        %3) major findings or trends found as a result of your analysis; and, 
+        %4) a brief summary of your interpretations and conclusions.
+
+        Setting up and operating a storage cluster with high availability is a complex task. 
+        By using containerization, it is possible to abstract away and encapsulate some repetitive tasks.
+        Therefore this study aims to analyse the possibility, implications and findings of a multi host
+        CEPH-Cluster, where the individual daemons are entirely running within a containerized environment.
+        To put the findings into a frame of reference, this study utilizes a mySQL-database which has 
+        special requirements on data storage. The key points in terms of advantages and disadvantages,
+        data integrity, performance and administion are scrutinized. Major findings are that ...
+        [insert findings here later] ... .
+        Therefore running a distributed CEPH-storage in a containerization environment is ... 
+        [draw conclusion] ... .
+
+
+
     \end{abstract}
 
     \section{Introduction}
+
+        In times where information is a valuable asset, it is of paramount importance to have a scalable and reliable
+        way of storing data and information. Considerations about data throughput and 
+        IOPS\footnote{Input/Output Operations per Second} are also a major design parameter on modern storage solutions.
+        These different storage solutions provide different approaches on these considerations. For any given use case, there
+        exist several options to adress these. Depending on the architecture and scope of the problem some are better
+        suited than others. A few major considerations are apart from scalability, reliability and speed also cost effectiveness,
+        vendor lock-in, complexity and granular customizability.
+
+        In general hardware based solutions have advantages in terms of raw performance but they often have significant disadvantages
+        when it comes to vendor lock-in, easy scalability or restoration of corrupted disks. Software and network based solutions are
+        \textit{in principle} less performant. However this can be mitigated for the most part by scaling up.
+
+        Apart from propretary cloud storage providers i.e. AWS, Azure or Google, the \textbf{free market [correct term?]}
+        is heavily dominated by CEPH by more than twice as much as the next competitor:
+
+        \begin{figure}[H]
+            \centering
+            \fbox{\includegraphics[width=0.95\textwidth]{marketshareCeph.png}}
+            \caption{Adoption of CEPH in OpenStack in 2016, \cite{ceph}}
+            \label{fig:ceph-market-share}
+        \end{figure}
+
+        Being conceived by Sage Weil for his doctoral thesis\cite{weil2007ceph}, CEPH became part of the Linux Kernel in 2010 and was acquired
+        by RedHat in 2014. 
+
+
+        \subsection{Scope of the problem}
         %Managing a highly available storage cluster is not a trivial task. Apart from provisioning and monitoring the hardware,
         %setting up multiple systems concurrently is a daunting task. Nowadays with provisioning tools like Salt, Chef or Puppet, 
         %this is easier than ever. However
@@ -84,11 +133,13 @@
         %do some sidestep to open stack and the RedHat Paper and why ceph blabla
 
         %do some explanation about single/multi tennant and cloud
-
+ 
         %put the whole paper in the context of IAAS; PAAS; SAAS
 
         % make a remark on which particular issue this paper adresses, since there are way too many 
         % to discuss and thats beyond this paper.
+
+        %related work: redhat document
 
         \subsection{CEPH Based storage cluster}
 
@@ -99,25 +150,39 @@
 
         %whats a container and why is it nice compared to VM, etc.
 
-        \subsection{Deploying}        
-
-        % with/without container
-
         \subsection{Databases}
 
         % quick rundown. Focussed on mySQl, mention of noSQL, etc.
 
-        \subsection{Scope of the problem and definition of research goal}
+        \subsection{Definition of research goal}        
 
-        %related work: redhat document
+        % with/without container
+
 
     \section{Setting up CEPH on Docker}
+
+        \subsection{CEPH Architecture}
+            
+            \subsubsection{Monitor Nodes}
+
+            % even/odd number and therefore need for odd number of servers
+
+            \subsubsection{Object Storage Devices}
+
+            % container config: different config options:
+            % essentially: how much work is abstracted away from container
+
+            \subsubsection{Metadata Service}
+
+            \subsubsection{Manager}    
 
         \subsection{System Architecture}
 
         % three servers, one mon per machine
         % different number of OSD per machine
         % connected via docker network bridge
+
+            \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}
 
             \subsubsection{CRUSH Fail mode}
 
@@ -135,18 +200,7 @@
             % workaroung with either multiple OSD per container (undesireable)
             % or different thing -> What are the implications anyway?
 
-        \subsection{Monitor Nodes}
 
-        % even/odd number and therefore need for odd number of servers
-
-        \subsection{Object Storage Devices - OSD}
-
-        % container config: different config options:
-        % essentially: how much work is abstracted away from container
-
-        \subsection{Metadata Service}
-
-        \subsection{Manager}
         
     \section{Database considerations}
 
@@ -172,44 +226,49 @@
         %sharding and distribution techniques
         %splitting up of big files over OSD
 
-        \subsection{Scope of this paper}
+        \subsection{Considerations for this research}
 
     \section{System Analysis}
 
         % what are the key points to analyze in the context
 
-        \subsection{disclamer bc of my setup}
+        \subsection{Disclaimer}
+
+        [Bc of Corona I can't use lab therefore only my setup. Discuss some shortcomings and implications.]
 
         % my setup is a multi tennant system, so take everything with a grain of salt.
         % however: disks were single tennant
 
         %cannot setup "native" environment, make reasonable assumptions based on other research
 
-        \subsection{Integrity}
+        \subsection{Data Integrity}
 
         %distribution over PG, OSD, Hosts
 
         %CEPH data striping:
         % https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/1.2.3/html/red_hat_ceph_architecture/ceph_client_architecture#:~:text=Object%20Size%3A%20Objects%20in%20the,%2C%204MB%2C%20etc.).
 
-        \subsection{Penalty}
+        \subsection{Performance Penalty}
 
         %CephFS vs. Librados vs. native
 
         % IOPS vs raw throughput
         % the point is: does docker make a difference here?
 
+        \subsection{Administration}
+
+        % Ceph Dashboard
+        % Grafana mySQL          
+
+
         \subsection{Tuning}
+
+        [very briefly]
 
         % KVM vs QEMU
         % librbd vs krbd
         % percona container in krbd module vs. mysql docker on librbd
         % other tuning parametres
-
-        \subsection{Administration}
-
-        % Ceph Dashboard
-        % Grafana mySQL          
 
     \section{Conclusion}
 

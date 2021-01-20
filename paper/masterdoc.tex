@@ -130,7 +130,7 @@
         relational databases. To guarantee deterministic behaviour, database servers need to have specific properties to be suitable
         as database providers. The underlying storage solution is one of these.
 
-        \subsection{Problem domains}
+        \subsection{Problem domains}\label{introduction}
             
             Managing a highly available storage cluster is not a trivial task. Apart from provisioning and monitoring the hardware,
             setting up multiple systems concurrently is a daunting task. Nowadays with infrastructure automation tools like Salt, Chef or Puppet, 
@@ -140,7 +140,7 @@
 
             As for CEPH, this is especially true, since there are three major versions in production\cite{ceph releases}, as of early 2021.
             Deprecated features and bugfixes create functional inconsistencies between major versions, hence it is a necessity to 
-            keep a cluster in production up to date. This necessitates constant modification and testing of the aforementioned automation tools.
+            keep a cluster in production up to date. This necessitates constant modification and testing of the previously mentioned automation tools.
 
             One way to isolate these problems is \textit{OS Level Virtualization}. By doing so, every application or application stack 
             exists within a so called \textit{Container} and is therefore isolated from the host to a certain degree. 
@@ -154,22 +154,39 @@
             further optimizations for one or another particular use case. To adress these would go beyond the scope of this paper.
             Nevertheless a brief outlook on further considerations will be provided at the end of chapter \ref*{analysis:tuning}.
 
-        \subsection{CEPH Based storage cluster}
+        \subsection{Definition of research goal}   
+        
+            The goal of this research is to evaluate if setting up a CEPH-storage cluster with containers is possible and if so, 
+            if it is a feasable option for a production environment. In order to make a conclusive assessment, three main points 
+            have to be examined. In order to draw a meaningful conclusion, these three main topics must be evaluated in contrast
+            to a \textit{non}-containerized cluster.
 
-        % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
-        % quick rundown of MON, OSD, MDS, MGR
+            \paragraph{Data Integrity}
 
-        \subsection{Containerization}
+                This means running a service on the cluster, which is very sensitive to data inconsistencies.
+                In this particular example a mySQL database is chosen. As for reasons which will be discussed in 
+                chapter \ref*{database:cluster}, Databases have some unique properties, which makes them more sensitive 
+                to issues with data replication and keeping clustered storages in sync. 
+                Therefore this use case is chosen as a suitable real world application.
 
-        %whats a container and why is it nice compared to VM, etc.
+            \paragraph{Performance}
 
-        \subsection{Databases}
+                Since performance is a main consideration in production environments, this is next to data integrity
+                the second most important concern. Depending on the overall cost structure of the environment, 
+                a performance penalty might outweigh the benefits. In this case a containerized cluster 
+                would be \textit{technically} possible but not economically feasable. Depending on the use case
+                the important metric also differs. Fileserving services like storage clouds or streaming services 
+                rely more on raw throughput. The data traffic with databases is generally rather small, therefore
+                IOPS\footnote{Input/Output Operations per Seconds} are more important.
 
-        % quick rundown. Focussed on mySQl, mention of noSQL, etc.
+            \paragraph{Administration}
 
-        \subsection{Definition of research goal}        
+                One important reason to do reasearch in this topic is to evaluate if the time and effort to
+                set up a cluster brings benefits in terms of administrative expenditure. At first sight a viable
+                metric could be the spent time from starting to have a cluster up and running. However, depending
+                on the production environment the results may vary to a wide degree. Therefore chapter \ref*{analysis:administration}
+                will try to generate more abstract metrics for an objective evaluation.
 
-        % with/without container
 
         \subsection{Related Work}
         %related work: redhat document
@@ -177,6 +194,11 @@
     \section{Setting up CEPH on Docker}
 
         \subsection{CEPH Architecture}
+
+            \subsubsection{Overview}
+
+            % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
+            % quick rundown of MON, OSD, MDS, MGR            
             
             \subsubsection{Monitor Nodes}
 
@@ -196,6 +218,10 @@
         % three servers, one mon per machine
         % different number of OSD per machine
         % connected via docker network bridge
+
+            \subsubsection{Containerization}\label{system:containerization}
+
+            %whats a container and why is it nice compared to VM, etc.
 
             \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}
 
@@ -221,6 +247,10 @@
         
     \section{Database considerations}
 
+        \subsection{Databases}
+
+        % quick rundown. Focussed on mySQl, mention of noSQL, etc.
+
         \subsection{Architecture of mySQL}
 
         % why onfirst sight it might not be ideal to deploy mySQL on ceph because of distributed nature
@@ -238,7 +268,7 @@
         % i.e. concurrent transactions
         % example: bank account
 
-        \subsection{Problems with clusters}
+        \subsection{Problems with clusters}\label{database:cluster}
 
         %sharding and distribution techniques
         %splitting up of big files over OSD
@@ -265,14 +295,14 @@
         %CEPH data striping:
         % https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/1.2.3/html/red_hat_ceph_architecture/ceph_client_architecture#:~:text=Object%20Size%3A%20Objects%20in%20the,%2C%204MB%2C%20etc.).
 
-        \subsection{Performance Penalty}
+        \subsection{Performance Penalty}\label{analysis:penalty}
 
         %CephFS vs. Librados vs. native
 
         % IOPS vs raw throughput
         % the point is: does docker make a difference here?
 
-        \subsection{Administration}
+        \subsection{Administration}\label{analysis:administration}
 
         % Ceph Dashboard
         % Grafana mySQL          

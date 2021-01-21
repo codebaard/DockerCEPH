@@ -52,8 +52,11 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{Julius Neudecker, 2025850}
+\rhead{Julius Neudecker, 2025850, Page \thepage}
 \lhead{CEPH Cluster in containers}
+
+%page numbering
+\pagenumbering{arabic}
 
 \title{Running a CEPH-Cluster from a containerized infrastructure}
 \subtitle{Use case: mySQL-database}
@@ -115,7 +118,7 @@
         \begin{figure}[H]
             \centering
             \fbox{\includegraphics[width=0.95\textwidth]{marketshareCeph.png}}
-            \caption{Adoption of CEPH in OpenStack in 2016, \cite{ceph}}
+            \caption{Adoption of CEPH in OpenStack in 2016, \cite{cephadoption}}
             \label{fig:ceph-market-share}
         \end{figure}
 
@@ -138,7 +141,7 @@
             in order to make it work on a complex or diverse infrastructure. Especially in times when upates and EOL\footnote{End Of Life} events
             create incompatibilites between working application stacks on any given host machine.
 
-            As for CEPH, this is especially true, since there are three major versions in production\cite{ceph releases}, as of early 2021.
+            As for CEPH, this is especially true, since there are three major versions in production\cite{cephreleases}, as of early 2021.
             Deprecated features and bugfixes create functional inconsistencies between major versions, hence it is a necessity to 
             keep a cluster in production up to date. This necessitates constant modification and testing of the previously mentioned automation tools.
 
@@ -193,14 +196,17 @@
             Since containerization and CEPH are already well established technologies, this section gives a brief overview of 
             other research which was already conducted in this area.
             RedHat in cooperation with Percona and Supermicro already conducted extensive research wheter it is feasable to
-            run a SQL-Database on a CEPH-Cluster\cite{redhat}. They concluded that indeed running a database on an 
+            run a SQL-Database on a CEPH-Cluster\cite{redhatstudy}. They concluded that indeed running a database on an 
             optimized CEPH-cluster exceeds industry standard database solutions. Furthermore scaling horizontally 
             is easier with a CEPH Cluster. Nevertheless it should be mentioned, that in this study the Percona 
             SQL distribution was utilized, which provides a native interface for kernel based RBD\footnote{Replicated Block Devices}.
+            
             Hong et.al. used CEPH to create a framework which aims to mitigate handling issues with database containers.
             This includes the issues mentioned in chapter\ref*{introduction} that containers aren't persistent ways
             to store data\cite{hong2019database}. However this paper does not use a CEPH-cluster to host a database and
-            has therefore only very little relevance to the topic of this paper. Although there are numerous papers
+            has therefore only very little relevance to the topic of this paper. 
+            
+            Although there are numerous papers
             which discuss the process of setting up CEPH itself or in the context of an OpenStack environment,
             none of them discussed a similar scope.            
 
@@ -355,7 +361,7 @@
         % summarize the keypoints in regard to the introduction
       
 
-    \bibliography{literature}        
+    \bibliography{references}        
     \bibliographystyle{IEEEtran}
 
 \end{document}

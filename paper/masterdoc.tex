@@ -189,7 +189,20 @@
 
 
         \subsection{Related Work}
-        %related work: redhat document
+        
+            Since containerization and CEPH are already well established technologies, this section gives a brief overview of 
+            other research which was already conducted in this area.
+            RedHat in cooperation with Percona and Supermicro already conducted extensive research wheter it is feasable to
+            run a SQL-Database on a CEPH-Cluster\cite{redhat}. They concluded that indeed running a database on an 
+            optimized CEPH-cluster exceeds industry standard database solutions. Furthermore scaling horizontally 
+            is easier with a CEPH Cluster. Nevertheless it should be mentioned, that in this study the Percona 
+            SQL distribution was utilized, which provides a native interface for kernel based RBD\footnote{Replicated Block Devices}.
+            Hong et.al. used CEPH to create a framework which aims to mitigate handling issues with database containers.
+            This includes the issues mentioned in chapter\ref*{introduction} that containers aren't persistent ways
+            to store data\cite{hong2019database}. However this paper does not use a CEPH-cluster to host a database and
+            has therefore only very little relevance to the topic of this paper. Although there are numerous papers
+            which discuss the process of setting up CEPH itself or in the context of an OpenStack environment,
+            none of them discussed a similar scope.            
 
     \section{Setting up CEPH on Docker}
 

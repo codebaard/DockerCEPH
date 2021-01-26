@@ -206,7 +206,7 @@
             to store data\cite{hong2019database}. However this paper does not use a CEPH-cluster to host a database and
             has therefore only very little relevance to the topic of this paper. 
             
-            Although there are numerous papers
+            Although there are numerous other papers
             which discuss the process of setting up CEPH itself or in the context of an OpenStack environment,
             none of them discussed a similar scope.            
 
@@ -219,22 +219,40 @@
         \subsection{CEPH Architecture}
 
             In short CEPH is a distributed solution for storage clusters. On one side it is specifically tailored to provide
-            maximum reliability and on the other side performance. It is open source and can be made completely from comodity hardware.
-            ...
+            maximum reliability by distributing data over different disks, machines or even datacenters and therefore also 
+            improving overall scalability and performance. On the other side it is also a cost effective because it is open source\textbf{[Github Link]}
+            and runs on commodity hardware.
 
-            \subsubsection{Overview}
+            The general structure includes several services which manage different functions within the cluster. In the context of
+            CEPH these are called deamons, which are discussed in detail in the following sections.
 
-            % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
-            % quick rundown of MON, OSD, MDS, MGR            
+            \begin{figure}%[H]
+                \centering
+                \fbox{\includegraphics[width=0.9\textwidth]{ceph-architecture.jpg}}
+                \caption{CEPH Architecture, \cite{hadlich_2015}}
+                \label{fig:ceph-arch}
+            \end{figure}
+            
+            Because it is a distributed system and may span over several physical machines, racks or even datacenters, inter-daemon
+            communication plays a key role. For the purpose of autonomous data replication the cluster relies on a dedicated network.
+            This network is separated from the public network, which is for client data access. Figure \ref{fig:ceph-arch} provides a 
+            general overview.
+
+            \subsubsection{Cluster Access}
+
+                
+
+                % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
+                % quick rundown of MON, OSD, MDS, MGR   
+            
+            \subsubsection{Object Storage Devices}
+
+            % container config: different config options:
+            % essentially: how much work is abstracted away from container            
             
             \subsubsection{Monitor Nodes}
 
             % even/odd number and therefore need for odd number of servers
-
-            \subsubsection{Object Storage Devices}
-
-            % container config: different config options:
-            % essentially: how much work is abstracted away from container
 
             \subsubsection{Metadata Service}
 

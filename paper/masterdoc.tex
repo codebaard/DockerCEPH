@@ -221,7 +221,7 @@
             In short CEPH is a distributed solution for storage clusters. On one side it is specifically tailored to provide
             maximum reliability by distributing data over different disks, machines or even datacenters and therefore also 
             improving overall scalability and performance. On the other side it is also a cost effective because it is open source\textbf{[Github Link]}
-            and runs on commodity hardware.
+            and runs on commodity hardware. 
 
             The general structure includes several services which manage different functions within the cluster. In the context of
             CEPH these are called deamons, which are discussed in detail in the following sections.
@@ -246,7 +246,7 @@
 
                 \begin{itemize}
                     \item \textit{CephFS} - A POSIX\footnote{Portable Operating System Interface - Part of the Unix specification} conform filesystem
-                    \item \textit{LibRBD/KRBD} - A block device
+                    \item \textit{LIBRBD/KRBD} - A block device
                     \item \textit{RADOSGW} - An REST gateway for storage buckets
                     \item \textit{LIBRADOS} - The API to access the cluster directly from applications
                 \end{itemize}
@@ -255,7 +255,27 @@
                 responsible for distributing the data over several phsyical disks. This is done by the \textit{OSD}-Daemon.
 
                 \paragraph{CephFS} is the filesystem, which allows for CEPH to behave to the user or the operating system like any other
-                disk or volume would. The key is that it is not a filesystem like EXT4 or 
+                filesystem would. However is has to be distinguished from from block device. 
+                The key is that it is not a filesystem like EXT4 or NTFS. It is more a translation layer to the
+                RADOS\footnote{Reliable Autonomous Distributed Object Storage} interface, and provides features like snapshots. A required metadata service called \textit{MDS} provides journaling functionality and handle
+                multi user data access. Because the throughput of the whole cluster scales linearly with the size of the cluster,
+                often several different MDSs are required to handle the load and distribute the file metadata mitigate
+                single points of failure. Is is best practice store and server the MDS from fast solid state drives to migigate bottlenecks.
+
+                \paragraph{LIBRBD/KRBD} is a virtual block device. The difference to CephFS is that is behaves like a physical disk.
+                Therefore it can be formatted with any filesystem like EXT4 or NTFS. The distinction between \textit{LIB}RBD and \textit{K}RBD
+                means userspace for LIBRBD and kernelspace for KRBD. To explain these differences between these two would go beyond the 
+                scope of this paper and requires knowledge about kernels, operating systems and memory handling. 
+
+                \paragraph{RADOSGW} provides as REST gateway access storage buckets. Unlike filesystems or block devices, these storage
+                buckets don't have a hierarchical structure with directories. All objects are stored on the same level, therefore the 
+                analogy to a bucket. This bucket is addressed by means of an API which provides also a metadata filter to select
+                specific files directly. This way of storing data is also compatible to Amazons S3\footnote{Simple Storage Service} product.
+                A widely adopted usecase is serving static files on the internet for media content, javascript or css files by content delivery networks.
+
+                \paragraph{LIBRADOS} provides a native API to access RADOS directly without any file system or block device translation layer in
+                between. The higher development costs for a more complex implementation might be worth the gains in throughput and IOPS
+                for critical applications.
 
                 % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
                 % quick rundown of MON, OSD, MDS, MGR   

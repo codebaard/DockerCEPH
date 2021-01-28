@@ -238,13 +238,24 @@
             This network is separated from the public network, which is for client data access. Figure \ref{fig:ceph-arch} provides a 
             general overview.
 
+            % mention about data striping, placement groupts and crush map
+
             \subsubsection{Cluster Access}
 
                 To access the cluster ceph provides different interfaces depending on the use-case:
 
                 \begin{itemize}
-                    \item \textit{CephFS} - A POSIX conform fs...
+                    \item \textit{CephFS} - A POSIX\footnote{Portable Operating System Interface - Part of the Unix specification} conform filesystem
+                    \item \textit{LibRBD/KRBD} - A block device
+                    \item \textit{RADOSGW} - An REST gateway for storage buckets
+                    \item \textit{LIBRADOS} - The API to access the cluster directly from applications
                 \end{itemize}
+
+                All these interfaces are based on LIBRADOS, provides the interface to access RADOS. This is the underlying object store
+                responsible for distributing the data over several phsyical disks. This is done by the \textit{OSD}-Daemon.
+
+                \paragraph{CephFS} is the filesystem, which allows for CEPH to behave to the user or the operating system like any other
+                disk or volume would. The key is that it is not a filesystem like EXT4 or 
 
                 % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
                 % quick rundown of MON, OSD, MDS, MGR   

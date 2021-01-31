@@ -295,17 +295,26 @@
                 needs a dedicated network as mentioned in section \ref{ceph:arch}. How the data is physically stored on the disk differs between
                 the two different backends used in older or newer releases.
             
-            \subsubsection{Monitor Nodes}
+            \subsubsection{Monitor Nodes - MON}
 
-            % even/odd number and therefore need for odd number of servers
-            % theres probably some important stuff about PG Groups and Crush maps
+                Monitor Nodes (abbreviated as \textit{MON}) have two main purposes. They maintain a copy of the cluster map to hand this out 
+                to a client, which connects to the cluster. Because of a fault this map might not reflect the state of the cluster accurately.
+                Therefore an odd number of MON nodes have to agree on the current state of the cluster and distribute the correct cluster map.
+                According to the CEPH documentation this is negotiated via the \textit{PAXOS} algorithm\cite{MONcephDocu}.
+                Although a cluster could technically work with just one MON node, it is highly recommended to have at least three MON nodes,
+                preventing a single point of failure.
 
-            \subsubsection{Metadata Service}
+            \subsubsection{Metadata Server - MDS}
 
-            %mention some details here about putting the MDS on an nVME SSD
-            % important for FS access
+                The metadata server is not neccessary for the cluster to operate as RBD, storage bucket or via Librados API.
+                However to provide a journaled filesystem via the CephFS, this service is needed to provide the filesystem metadata such
+                as permissions and timestamps. As stated from RedHat, it is best practice to deploy a MDS with big and fast nVME drives\cite{redhatstudy}.
+                These can be also used in conjunction with memcached, where the recent metadata are stored into the RAM of the MDS.
+                Overprovisioning, automatic failover and scalability are the main considerations for MDS to have high availability and high performance.
 
-            \subsubsection{Manager}    
+            \subsubsection{Manager - MGR}   
+            
+                
 
             % what does the manager even do?
             % got mandatory in some release

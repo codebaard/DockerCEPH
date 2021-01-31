@@ -24,6 +24,7 @@
 
 %bibtex
 \usepackage{cite}
+\usepackage{csquotes}
 
 %code snippets
 \usepackage{listings}
@@ -216,7 +217,7 @@
         structure is provided. Secondly The system-architecture for the experiments in the scope of this paper is explained.
         This second section will make a small detour into containerization, what it means, what the benefits and the drawbacks are.
 
-        \subsection{CEPH Architecture}
+        \subsection{CEPH Architecture}\label{ceph:arch}
 
             In short CEPH is a distributed solution for storage clusters. On one side it is specifically tailored to provide
             maximum reliability by distributing data over different disks, machines or even datacenters and therefore also 
@@ -238,7 +239,13 @@
             This network is separated from the public network, which is for client data access. Figure \ref{fig:ceph-arch} provides a 
             general overview.
 
-            % mention about data striping, placement groupts and crush map
+            How the data is distributed internally is determined by two main factors: \textit{Placement Groups} and the \textit{CRUSH} algorithm.
+            Placement Groups (abbreviated \textit{PGs}) are a way to keep track of the physical location of objects.
+            Files are split up into different objects, where each object is stored in a different PG. Which one is determined by the 
+            CRUSH\footnote{Controlled, Scalable, Decentralized Placement of Replicated Data} algorithm\cite{weil2007ceph}.
+            The reasoning behind PGs is that keeping track of millions of objects via metadata is computationally expensive\cite{PGcephDocu}.
+            Therefore Objects are hashed and assigned to PGs.
+            A so called CRUSH-Map keeps track of the structure of the whole cluster. This will become important in section \ref{system:crush-fail}.
 
             \subsubsection{Cluster Access}
 
@@ -272,18 +279,21 @@
                 analogy to a bucket. This bucket is addressed by means of an API which provides also a metadata filter to select
                 specific files directly. This way of storing data is also compatible to Amazons S3\footnote{Simple Storage Service} product.
                 A widely adopted usecase is serving static files on the internet for media content, javascript or css files by content delivery networks.
+                They can also be used to store virtual disk images to be used in conjunction with RBDs.
 
                 \paragraph{LIBRADOS} provides a native API to access RADOS directly without any file system or block device translation layer in
                 between. The higher development costs for a more complex implementation might be worth the gains in throughput and IOPS
                 for critical applications.
 
-                % librados, radosgw, rbd, cephfs (build on top of krbd/librados -> source?)
-                % quick rundown of MON, OSD, MDS, MGR   
-            
-            \subsubsection{Object Storage Devices}
+            \subsubsection{Object Storage Devices - OSD}
 
-            % container config: different config options:
-            % essentially: how much work is abstracted away from container            
+                Within the CEPH domain, these are the disks, where the actual data objects are stored to. 
+                One or more OSDs can be handled from one CEPH OSD Daemon, which provides the connecting layer to the whole cluster.
+                Also one OSD can contain several Placement Groups. This depends on the configuration of the cluster.
+                Since data is replicated within the cluster and constantly updated, one OSD could fail and the data and PGs of this failed
+                OSD will be written to another OSD. This constant data shuffling takes place transparent to the user and is the reason why CEPH
+                needs a dedicated network as mentioned in section \ref{ceph:arch}. How the data is physically stored on the disk differs between
+                the two different backends used in older or newer releases.
             
             \subsubsection{Monitor Nodes}
 
@@ -310,11 +320,17 @@
 
             %whats a container and why is it nice compared to VM, etc.
 
+            \subsubsection{Docker Config for CEPH Image}
+
+            %OSD
+            % container config: different config options:
+            % essentially: how much work is abstracted away from container   
+
             \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}
 
             %etcd (KV storage), pods, ceph, mysql
 
-            \subsubsection{CRUSH Fail mode}
+            \subsubsection{CRUSH Fail mode}\label{system:crush-fail}
 
             % elaborate different settings: Datacenter, Room, Row, Rack, Host, OSD...
             % this has to be taken into consideration for providing the data on a global scale

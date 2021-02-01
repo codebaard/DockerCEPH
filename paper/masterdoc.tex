@@ -335,7 +335,32 @@
 
             \subsubsection{Containerization}\label{system:containerization}
 
-            %whats a container and why is it nice compared to VM, etc.
+                %whats a container and why is it nice compared to VM, etc.
+                Although in the previous text the term containerization was mentioned a few times already, there was no
+                definitive definition of what a container or more general containerization. Firstly it is important to establish
+                that containers are not \textit{something like} a virtual machine. In fact virtual machines are entire systems 
+                which are executed on the hosts hypervisor\footnote{An abstraction layer for hardware and operating systems} and entirely self contained.
+                This approach is really useful to deploy and maintain infrastructure since a machine with a defined behaviour can be
+                launched in little time with no effort. However in terms of application development or microservices especially in the realm
+                of CI/CD\footnote{Continuous Integration/Continuous Deployment} this is an uneccessary overhead.
+                Containers on the other hand are in comparison small entities, which contain only the neccessary components
+                of an application or service to run.
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=0.9\textwidth]{docker-vs-vm.png}}
+                    \caption{Containerization compared to Virtualization, \cite{2021_docker}}
+                    \label{fig:docker-vs-vm}
+                \end{figure}     
+
+                By deploying applications or services this way, problems such as confliciting software versions or 
+                applications can be encapsulated, hence solved. This makes scaling also easier, since scaling doesn't
+                have to happen on a virtual machine level, which might cause additional costs for licensing, 
+                services can be scaled on a more granular basis with containers and orchestration tools like
+                \textit{Docker Swarm} or \textit{Kubernetes}, which will be explained in detail in section \ref{system:containerization}.
+                As of early 2021, there exists a vast variety of different containerization solutions such as 
+                Rkt, LXD and Docker\cite{cncf}. However Docker is unarguably the biggest solution in terms of 
+                adoption, available images\footnote{Docker images are the blueprints to start containers from} and community.
 
             \subsubsection{Docker Config for CEPH Image}
 
@@ -343,7 +368,7 @@
             % container config: different config options:
             % essentially: how much work is abstracted away from container   
 
-            \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}
+            \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}\label{system:orchestration}
 
             %etcd (KV storage), pods, ceph, mysql
 
@@ -362,7 +387,6 @@
             % refer to https://hub.docker.com/r/ceph/daemon 
             % workaroung with either multiple OSD per container (undesireable)
             % or different thing -> What are the implications anyway?
-
 
         
     \section{Database considerations}

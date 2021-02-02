@@ -51,6 +51,9 @@
     tabsize=3
 }
 
+%dynamic image scaling
+\newcommand{\imgScale}{0.7}
+
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Julius Neudecker, 2025850, Page  \thepage}
@@ -118,7 +121,7 @@
 
         \begin{figure}[H]
             \centering
-            \fbox{\includegraphics[width=0.95\textwidth]{marketshareCeph.png}}
+            \fbox{\includegraphics[width=\imgScale\textwidth]{marketshareCeph.png}}
             \caption{Adoption of CEPH in OpenStack in 2016, \cite{cephadoption}}
             \label{fig:ceph-market-share}
         \end{figure}
@@ -227,9 +230,9 @@
             The general structure includes several services which manage different functions within the cluster. In the context of
             CEPH these are called deamons, which are discussed in detail in the following sections.
 
-            \begin{figure}%[H]
+            \begin{figure}[H]
                 \centering
-                \fbox{\includegraphics[width=0.9\textwidth]{ceph-architecture.jpg}}
+                \fbox{\includegraphics[width=\imgScale\textwidth]{ceph-architecture.jpg}}
                 \caption{CEPH Architecture, \cite{hadlich_2015}}
                 \label{fig:ceph-arch}
             \end{figure}
@@ -306,9 +309,9 @@
                 Although a cluster could technically work with just one MON node, it is highly recommended to have at least three MON nodes,
                 preventing a single point of failure.
 
-                \begin{figure}%[H]
+                \begin{figure}[H]
                     \centering
-                    \fbox{\includegraphics[width=0.9\textwidth]{Ceph-crush-map.png}}
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Ceph-crush-map.png}}
                     \caption{Placement Groups and CRUSH Algorithm, \cite{krenn2020}}
                     \label{fig:ceph-crush}
                 \end{figure}                           
@@ -348,7 +351,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \fbox{\includegraphics[width=0.9\textwidth]{docker-vs-vm.png}}
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{docker-vs-vm.png}}
                     \caption{Containerization compared to Virtualization, \cite{2021_docker}}
                     \label{fig:docker-vs-vm}
                 \end{figure}     

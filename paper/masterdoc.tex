@@ -330,7 +330,7 @@
                 functionality to the cluster itself but acts as an interface to external monitoring tools and systems. Without it 
                 the state of the cluster won't appear to be healthy nor be externally visibly updated\cite{MGRcephDocu}.                
 
-        \subsection{System Architecture}
+        \subsection{System Architecture}\label{system:my-setup}
 
         % three servers, one mon per machine
         % different number of OSD per machine
@@ -365,25 +365,47 @@
                 Rkt, LXD and Docker\cite{cncf}. However Docker is unarguably the biggest solution in terms of 
                 adoption, available images\footnote{Docker images are the blueprints to start containers from} and community.
 
-            \subsubsection{Docker Config for CEPH Image}
-
-            %OSD
-            % container config: different config options:
-            % essentially: how much work is abstracted away from container   
-
             \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}\label{system:orchestration}
 
             %etcd (KV storage), pods, ceph, mysql
 
+            \subsubsection{Docker Config for CEPH Image}
+
+            %OSD
+            % container config: different config options:
+            % essentially: how much work is abstracted away from container             
+
             \subsubsection{CRUSH Fail mode}\label{system:crush-fail}
 
-            % elaborate different settings: Datacenter, Room, Row, Rack, Host, OSD...
-            % this has to be taken into consideration for providing the data on a global scale
+                In order to define the behaviour of the cluster in case of failures, CEPH provides a setting
+                which is called \textit{CRUSH Fail Mode}. This setting defines the biggest possible failure domains, 
+                which should not affect data integrity\cite{crushFailure}. In consequence, data is replicated in a
+                way which guarantees this. To pick a few examples: 
 
-            % host vs osd in this case
+                \paragraph{OSD (or device)} means that a single drive could fail and no data will be lost.
+                This would be the preferred setting when the cluster runs on a single machine. However, if the cluster
+                consists of more than one machine and the whole machine fails because of a PSU\footnote{Power Supplying Unit} failure
+                for example, data integrity cannot be guaranteed anymore.
 
-            % assuming all disks are _equally_ new, host mode would be appropriate in this setting
-            % in this particular case I would choose OSD level since disks are of different type, age and degradation
+                \paragraph{Chassis} is the failure mode for sophisticated rack mounted servers, where a multitude of servers
+                comprise the whole cluster. This would cover the previously mentioned case, which might be as well interesting for maintenance,
+                when individual machines have to be maintained or decommissioned.
+                
+                \paragraph{Rack} provides data integrity across multiple chassis or hosts on a datacenter level. If for example
+                a critical component of the network infrastructure fails, this could provide some security. Although CEPH clusters 
+                are in principle set up in a way which prevents SPOF\footnote{Single Point Of Failure}, this must not be true for the
+                peripheral infrastructure. 
+
+                \paragraph{Datacenter} usually means that a huge number of several racks, consisting of multiple chassis are grouped
+                together as a common failure domain - in case of a power outage or natural disaster. If the company which owns the datacenter,
+                operates on a global scale this failure mode is also a consideration for performance. Because of physical and network
+                topology, the RTT\footnote{Round Trip Time} to a certain datacenter might be longer than desired. If all data is replicated
+                on datacenter granularity, a global scale data integrity is guaranteed as well as the possibly shortest response time.
+
+                \paragraph{In general} the failure mode should be as granular as possible but also as fine as financially feasable.
+                In the context of the system architecture in the scope of this paper (see section \ref{system:my-setup}), the fail mode will be on an OSD level.
+                Because my experimental setup consists of multiple disks and flash storages with different ages and levels of degradation.
+                However, the appropriate setting would be \textit{host}-level data replication. \textbf{[Revisit this section after finished setup]}
 
             \subsubsection{Issue with Docker Image}
 

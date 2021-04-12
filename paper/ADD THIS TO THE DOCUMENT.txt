@@ -1,0 +1,31 @@
+https://ceph.io/geen-categorie/bootstrap-your-ceph-cluster-in-docker/
+https://www.docker.com/blog/understanding-docker-networking-drivers-use-cases/
+
+
+
+raspberry:
+WARNING: Ceph inode numbers are 64 bits wide, and FUSE on 32-bit kernels does
+         not cope well with that situation.  Expect to crash shortly.
+
+timeout:
+not on same host mounten!
+
+mount command different from documentation - for fuse:
+sudo ceph-fuse -n client.sysop -m 192.168.178.230:6789 /mnt/ceph/
+instead: https://docs.ceph.com/en/latest/cephfs/mount-using-fuse/#prerequisites
+
+create authentication for client
+https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/2/html/ceph_file_system_guide_technology_preview/mounting_and_unmounting_ceph_file_systems#mounting-cephfs-fuse
+
+##block sizes
+https://community.hpe.com/t5/Around-the-Storage-Block/Busting-the-Myth-of-Storage-Block-Size/ba-p/6995434
+--> make benchmark
+
+##performance checks:
+https://tracker.ceph.com/projects/ceph/wiki/Benchmark_Ceph_Cluster_Performance
+
+##iperf
+https://www.cyberithub.com/how-to-install-iperf-network-throughput-test/
+
+##mysql performance
+https://www.digitalocean.com/community/tutorials/how-to-measure-mysql-query-performance-with-mysqlslap

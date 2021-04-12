@@ -63,9 +63,9 @@
 \pagenumbering{arabic}
 
 \title{Running a CEPH-Cluster from a containerized infrastructure}
-\subtitle{Use case: mySQL-database}
+\subtitle{Performance test with a mySQL-Database}
 \author{Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de}}
-\date{January 2020}
+\date{April 2021}
 
 
 \begin{document}
@@ -220,6 +220,35 @@
         structure is provided. Secondly The system-architecture for the experiments in the scope of this paper is explained.
         This second section will make a small detour into containerization, what it means, what the benefits and the drawbacks are.
 
+        \subsubsection{Containerization}\label{system:containerization}
+
+            %whats a container and why is it nice compared to VM, etc.
+            Although in the previous text the term containerization was mentioned a few times already, there was no
+            definitive definition of what a container or more general containerization. Firstly it is important to establish
+            that containers are not \textit{something like} a virtual machine. In fact virtual machines are entire systems 
+            which are executed on the hosts hypervisor\footnote{An abstraction layer for hardware and operating systems} and entirely self contained.
+            This approach is really useful to deploy and maintain infrastructure since a machine with a defined behaviour can be
+            launched in little time with no effort. However in terms of application development or microservices especially in the realm
+            of CI/CD\footnote{Continuous Integration/Continuous Deployment} this is an uneccessary overhead.
+            Containers on the other hand are in comparison small entities, which contain only the neccessary components
+            of an application or service to run.
+
+            \begin{figure}[H]
+                \centering
+                \fbox{\includegraphics[width=\imgScale\textwidth]{docker-vs-vm.png}}
+                \caption{Containerization compared to Virtualization, \cite{2021_docker}}
+                \label{fig:docker-vs-vm}
+            \end{figure}     
+
+            By deploying applications or services this way, problems such as confliciting software versions or 
+            applications can be encapsulated, hence solved. This makes scaling also easier, since scaling doesn't
+            have to happen on a virtual machine level, which might cause additional costs for licensing, 
+            services can be scaled on a more granular basis with containers and orchestration tools like
+            \textit{Docker Swarm} or \textit{Kubernetes}, which will be explained in detail in section \ref{system:containerization}.
+            As of early 2021, there exists a vast variety of different containerization solutions such as 
+            Rkt, LXD and Docker\cite{cncf}. However Docker is unarguably the biggest solution in terms of 
+            adoption, available images\footnote{Docker images are the blueprints to start containers from} and community.
+
         \subsection{CEPH Architecture}\label{ceph:arch}
 
             In short CEPH is a distributed solution for storage clusters. On one side it is specifically tailored to provide
@@ -332,49 +361,159 @@
 
         \subsection{System Architecture}\label{system:my-setup}
 
-        % three servers, one mon per machine
-        % different number of OSD per machine
-        % connected via docker network bridge
+            In this section I'll go over the system architecture in my experiments since its understanding is vital to the understanding
+            of the configuration of the containers later on.
 
-            \subsubsection{Containerization}\label{system:containerization}
+            Firstly, because of the Covid-19 pandemic I couldn't use the lab in the university so I had to rely on my personal ressources 
+            in order to do my experiments. Since these are somewhat limited I configured a few things different than it would be done in reality otherwise.
 
-                %whats a container and why is it nice compared to VM, etc.
-                Although in the previous text the term containerization was mentioned a few times already, there was no
-                definitive definition of what a container or more general containerization. Firstly it is important to establish
-                that containers are not \textit{something like} a virtual machine. In fact virtual machines are entire systems 
-                which are executed on the hosts hypervisor\footnote{An abstraction layer for hardware and operating systems} and entirely self contained.
-                This approach is really useful to deploy and maintain infrastructure since a machine with a defined behaviour can be
-                launched in little time with no effort. However in terms of application development or microservices especially in the realm
-                of CI/CD\footnote{Continuous Integration/Continuous Deployment} this is an uneccessary overhead.
-                Containers on the other hand are in comparison small entities, which contain only the neccessary components
-                of an application or service to run.
+            \textit{I assume that the reader has a basic understanding of Docker and how commands are executed or how containers work in detail. Details which are immaterial 
+            to this topic will not be explained in great depth in the scope of this work.}
+
+            \subsubsection{Hardware Diagram}
+
+                The cluster is distributed across three different machines for storage. Since CEPH isn't available as Docker Image for 32bit and 64bit ARM architectures, 
+                the only available x86\_64 host acts as Docker host for all containers including the OSDs. 
+                However to create constraints such as network latency and bandwith, the physical volumes were
+                attached to the ARM-Machines and mounted as iSCSI devices on the Docker host. Because in this small setup the bottlenecks weren't available CPU performance
+                and RAM the performance impact of running a few more containers is negligible.
 
                 \begin{figure}[H]
                     \centering
-                    \fbox{\includegraphics[width=\imgScale\textwidth]{docker-vs-vm.png}}
-                    \caption{Containerization compared to Virtualization, \cite{2021_docker}}
-                    \label{fig:docker-vs-vm}
-                \end{figure}     
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
+                    \caption{Hardware Diagram}
+                    \label{fig:hardware-diagram}
+                \end{figure}   
 
-                By deploying applications or services this way, problems such as confliciting software versions or 
-                applications can be encapsulated, hence solved. This makes scaling also easier, since scaling doesn't
-                have to happen on a virtual machine level, which might cause additional costs for licensing, 
-                services can be scaled on a more granular basis with containers and orchestration tools like
-                \textit{Docker Swarm} or \textit{Kubernetes}, which will be explained in detail in section \ref{system:containerization}.
-                As of early 2021, there exists a vast variety of different containerization solutions such as 
-                Rkt, LXD and Docker\cite{cncf}. However Docker is unarguably the biggest solution in terms of 
-                adoption, available images\footnote{Docker images are the blueprints to start containers from} and community.
-
-            \subsubsection{Orchestration with Kubernetes (or Docker Swarm maybe...)}\label{system:orchestration}
-
-            %etcd (KV storage), pods, ceph, mysql
+                Furthermore is the Docker host a server in production, therefore a certain amount of around 10\% were already allocated to other running processes.
+                Since my tests were exclusively conducted in the local network, the bandwith of the internet connection wasn't a concern either.
+                Usually a CEPH cluster uses two seperate networks: one for replicating data between the OSDs and one to access the cluster for data or configuration.
+                In this case only one physical network was available, which has a bandwith of 1GBit/s
 
             \subsubsection{Docker Config for CEPH Image}
 
-            %OSD
-            % container config: different config options:
-            % essentially: how much work is abstracted away from container             
+                By starting CEPH as a container, a lot of configuration work is abstracted away in the stock Docker Image.
+                The official image \textbf{INSERT LINK HERE} provides two options to distribute the configuration between the different nodes:
 
+                \begin{itemize}
+                    \item On disk
+                    \item KV-Store\footnote{As of 04.2021 only etcd is supported by the official image}
+                \end{itemize}
+
+                The same Image provides all the different daemons, which are needed in a CEPH cluster and thus every container is configured different.
+                The configuration is stored \textit{on Disk} because all containers are executed on the same physical host, hence a remote KV-Store isn't required.
+                This is reflected by the two directories \textit{/docker/ceph/data/etc/} and \textit{/docker/ceph/data/lib}, which all containers have in common.
+                
+                Another issue is that the MON and OSD nodes run into timeout issues, when deployed on the same host and configured to use Dockers \textit{--net=host} option, as suggested
+                by the official manual \textbf{insert link to docher hub here}.
+                This would effectively bind the ports of any container, which is configured in that way directly to the host interface. 
+                I chose another approach: providing each container with a dedicated IP-Adress within the network. This is possible by using the \textit{MACVLAN} network
+                driver which is provided by the docker image. This allows every container which has this driver enabled to appear as a seperate host apart from the docker host.
+                This is configured with the \textit{--ip=192.167.178.2XX} option.
+
+                The complete configuration is made available under a repository \textbf{INSERT CONFIG AND REPO HERE}.
+
+                \paragraph{Monitor Nodes}
+
+                    The network configuration of the monitor nodes is of special interest here: The public network has to be configured in case there are two 
+                    distinct networks as explained in \textbf{refer to section}. This is not neccessary for the other nodes since the configuration will be distributed
+                    after the monitor nodes are online.
+
+                    \begin{lstlisting}
+                        docker run -d \textbackslash
+                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
+                        -e MON_IP=192.168.178.220 \textbackslash
+                        -e CEPH_PUBLIC_NETWORK=192.168.178.0/24 \textbackslash
+                        --ip=192.168.178.220 \textbackslash
+                        --network=macvlan0 \textbackslash
+                        --name ceph_mon1 ceph/daemon mon                        
+                    \end{lstlisting}
+
+                \paragraph{Manager Nodes}
+
+                    This containers runs in parallel to a monitor node and doesn't need any special configuration.
+
+                    \begin{lstlisting}                    
+                        docker run -d \textbackslash
+                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
+                        --ip=192.168.178.223 \textbackslash
+                        --network=macvlan0 \textbackslash
+                        --name ceph_mgr ceph/daemon mgr
+                    \end{lstlisting}
+
+                \paragraph{OSD Nodes}
+
+                    The configuration of the OSD nodes is compared to the other nodes more complicated. I chose to provide a physical disk
+                    to the container. Therefore it had to be initialized as a logical volume before the OSD node is able to utilize it.
+                    The official CEPH image provides a configuration option for this purpose. The following command creates a temporary container,
+                    which is configured by the \textit{--rm} command. The \textit{--data /dev/sdX} command specifies the physical disk, which will be 
+                    pre-treated. A prerequisite is that any disk has to be completely wiped of any partition table. This is done by executing \textit{sgdisk}
+                    on every single in question.
+
+                    \begin{lstlisting}
+                        docker run --rm \textbackslash
+                        --privileged=true \textbackslash
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
+                        -v /var/log/ceph:/var/log/ceph/ \textbackslash
+                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
+                        -v /dev/:/dev/ \textbackslash
+                        -v /run/lock/lvm:/run/lock/lvm:z \textbackslash
+                        -v /run/lvm/:/run/lvm/ \textbackslash
+                        -v /var/run/udev/:/var/run/udev/:z \textbackslash
+                        --ip=192.168.178.230 \textbackslash
+                        --network=macvlan0 \textbackslash
+                        --entrypoint ceph-volume ceph/daemon lvm prepare \textbackslash
+                        --bluestore \textbackslash
+                        --data /dev/sdX \textbackslash
+                        --no-systemd                            
+                    \end{lstlisting} 
+
+                    When the disk is prepared, it appears as \textit{lvm-partition} with a ceph-prefix. The OSD node can then be started by executing the following command:
+
+                    \begin{lstlisting}
+                        docker run -d \textbackslash
+                        --privileged=true \textbackslash
+                        --pid=host \textbackslash
+                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
+                        -v /dev/:/dev/ \textbackslash
+                        -v /run/udev/:/run/udev/ \textbackslash
+                        -e OSD_DEVICE=/dev/sde \textbackslash
+                        -e OSD_TYPE=disk \textbackslash
+                        -e OSD_BLUESTORE=1 \textbackslash
+                        -e CEPH_DAEMON=OSD_CEPH_VOLUME_ACTIVATE \textbackslash
+                        -e OSD_ID=0 \textbackslash
+                        --ip=192.168.178.230 \textbackslash
+                        --network=macvlan0 \textbackslash
+                        --name ceph_osd_sde ceph/daemon osd
+                    \end{lstlisting}
+
+                    There are some important things to consider here: firstly the \textit{--pid=host} configuration is neccessary to prevent that the host system
+                    runs out of open file handles. This is a bug, which has to be fixed\textbf{INSERT LINK TO GITHUB ISSUE HERE}. The \textit{--privileged=true} setting
+                    is neccessary to give the required access to disks from within the container. However from a security standpoint this is not good practice and should never be
+                    used in that way in a production environment! \textit{OSD\_BLUESTORE=1} configures the way CEPH stores the data in the background and \textit{OSD\_ID=X} defines
+                    the ID under which the OSD will be reffered to by the cluster.
+
+                \paragraph{Metadata Nodes}
+
+                    Since one phyisical host can host many different metadata nodes to provide peak performance, these mds nodes have to be named uniquely. This is done 
+                    by using the \textit{\$hostname-x} variable. Also the official image is recommending to set the \textit{CEPHFS\_CREATE=1} flag. On my setup however this resulted in an 
+                    error and the filesystem was not going to be created. In my case I had to create the filesystem manually from within the monitor container by means of a \textit{docker exec}
+                    command. Therefore this flag has to be set to "0" in this case.
+
+                    \begin{lstlisting}
+                        docker run -d \textbackslash
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
+                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
+                        -e CEPHFS_CREATE=0 \textbackslash
+                        -e MDS_NAME=mds-$(hostname)-a \textbackslash
+                        --ip=192.168.178.245 \textbackslash
+                        --network=macvlan0 \textbackslash
+                        --name ceph_mds_a ceph/daemon mds
+                    \end{lstlisting}   
+                    
             \subsubsection{CRUSH Fail mode}\label{system:crush-fail}
 
                 In order to define the behaviour of the cluster in case of failures, CEPH provides a setting
@@ -413,70 +552,27 @@
             % workaroung with either multiple OSD per container (undesireable)
             % or different thing -> What are the implications anyway?
 
-        
-    \section{Database considerations}
-
-        \subsection{Databases}
-
-        % quick rundown. Focussed on mySQl, mention of noSQL, etc.
-
-        \subsection{Architecture of mySQL}
-
-            % why onfirst sight it might not be ideal to deploy mySQL on ceph because of distributed nature
-            % and in case of Table > volume, etc.
-            % architecture: https://www.youtube.com/watch?v=CCqFqraSQQ0
-
-            % whats acid and why is it important in this context
-            % is it actually an issue?!            
-
-            \subsection{ACID}
-
-            % Atomic, Consistent, Isolated, Durable
-            % https://www.youtube.com/watch?v=VRm2UMsFVz0
-
-            \paragraph{Atomic}
-
-            \paragraph{Consistent}
-
-            \paragraph{Isolated}
-
-            \paragraph{Durable}
-
-
-            \paragraph{Example: Bank Account}
-
-            % i.e. concurrent transactions
-            % example: bank account
-
-        \subsection{Problems with clusters}\label{database:cluster}
-
-            
-
-        %sharding and distribution techniques
-        %splitting up of big files over OSD
-
-        \subsection{Considerations for this research}
+            % ##keyring issue
+            % https://github.com/ceph/ceph-container/issues/1683
 
     \section{System Analysis}
 
         % what are the key points to analyze in the context
 
-        \subsection{Disclaimer}
-
-        [Bc of Corona I can't use lab therefore only my setup. Discuss some shortcomings and implications.]
-
-        % my setup is a multi tennant system, so take everything with a grain of salt.
-        % however: disks were single tennant
-
-        %cannot setup "native" environment, make reasonable assumptions based on other research
-
         \subsection{Data Integrity}
+
+        % why this is important for databases (strippedn down version of mySQL section)
 
         %distribution over PG, OSD, Hosts
         %bluestore vs posix
 
         %CEPH data striping:
         % https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/1.2.3/html/red_hat_ceph_architecture/ceph_client_architecture#:~:text=Object%20Size%3A%20Objects%20in%20the,%2C%204MB%2C%20etc.).
+
+        \subsection{Raw performance test}
+
+        %scbench
+        %msqlslap
 
         \subsection{Performance Penalty}\label{analysis:penalty}
 

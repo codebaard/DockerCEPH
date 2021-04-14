@@ -390,7 +390,7 @@
                 Usually a CEPH cluster uses two seperate networks: one for replicating data between the OSDs and one to access the cluster for data or configuration.
                 In this case only one physical network was available, which has a bandwith of 1GBit/s
 
-            \subsubsection{Docker Config for CEPH Image}
+            \subsubsection{Docker Config for CEPH Image}\label{config:docker}
 
                 By starting CEPH as a container, a lot of configuration work is abstracted away in the stock Docker Image.
                 The official image \textbf{INSERT LINK HERE} provides two options to distribute the configuration between the different nodes:
@@ -408,8 +408,8 @@
                 by the official manual \textbf{insert link to docher hub here}.
                 This would effectively bind the ports of any container, which is configured in that way directly to the host interface. 
                 I chose another approach: providing each container with a dedicated IP-Adress within the network. This is possible by using the \textit{MACVLAN} network
-                driver which is provided by the docker image. This allows every container which has this driver enabled to appear as a seperate host apart from the docker host.
-                This is configured with the \textit{--ip=192.167.178.2XX} option.
+                driver which is provided by the docker engine. This allows every container which has this driver enabled to appear as a seperate host apart from the docker host.
+                The IP is configured with the \textit{--ip=192.167.178.2XX} option.
 
                 The complete configuration is made available under a repository \textbf{INSERT CONFIG AND REPO HERE}.
 
@@ -546,60 +546,98 @@
                 Because my experimental setup consists of multiple disks and flash storages with different ages and levels of degradation.
                 However, the appropriate setting would be \textit{host}-level data replication. \textbf{[Revisit this section after finished setup]}
 
-            \subsubsection{Issue with Docker Image}
+            \subsubsection{Creating the cluster}
 
-            % refer to https://hub.docker.com/r/ceph/daemon 
-            % workaroung with either multiple OSD per container (undesireable)
-            % or different thing -> What are the implications anyway?
+                Although there are different solutions to automate the deployment of a cluster such as \textit{CEPH-Ansible}\textbf{ADD LINK} or \textit{CEPH for Rook}\textbf{ADD REPO}
+                my cluster is rolled out and configured with a simple shellscript - \textit{startup.sh} - which creates a fully functional cluster:
 
-            % ##keyring issue
-            % https://github.com/ceph/ceph-container/issues/1683
+                \begin{lstlisting}
+                    #!/bin/sh
+
+                    ## start MON and MGR
+                    docker run -d -v /docker/ceph/data/etc:/etc/ceph -v /docker/ceph/data/lib:/var/lib/ceph/ -e MON_IP=192.168.178.220 -e CEPH_PUBLIC_NETWORK=192.168.178.0/24 --ip=192.168.178.220 --network=macvlan0 --name ceph_mon1 ceph/daemon mon
+                    docker run -d -v /docker/ceph/data/etc:/etc/ceph -v /docker/ceph/data/lib:/var/lib/ceph/ --ip=192.168.178.223 --network=macvlan0 --name ceph_mgr ceph/daemon mgr
+
+                    docker exec -it ceph_mon1 ceph auth get client.bootstrap-osd -o /var/lib/ceph/bootstrap-osd/ceph.keyring
+
+                    ## prepare and create OSDs
+                    ./prepare.sh
+                    ./create.sh
+
+                    ## create fs
+                    docker exec -it ceph_mon1 ceph osd pool create cephfs_data
+                    docker exec -it ceph_mon1 ceph osd pool create cephfs_metadata
+                    docker exec -it ceph_mon1 ceph fs new cephfs cephfs_metadata cephfs_data
+
+                    ##create the additional MON and MDS after the cluster has been created
+                    docker run -d -v /docker/ceph/data/etc:/etc/ceph -v /docker/ceph/data/lib:/var/lib/ceph/ -e MON_IP=192.168.178.221 -e CEPH_PUBLIC_NETWORK=192.168.178.0/24 --ip=192.168.178.221 --network=macvlan0 --name ceph_mon2 ceph/daemon mon
+                    docker run -d -v /docker/ceph/data/lib:/var/lib/ceph/ -v /docker/ceph/data/etc:/etc/ceph -e CEPHFS_CREATE=0 -e MDS_NAME=mds-$(hostname)-a --ip=192.168.178.245 --network=macvlan0 --name ceph_mds_a ceph/daemon mds
+
+                    docker run -d -v /docker/ceph/data/etc:/etc/ceph -v /docker/ceph/data/lib:/var/lib/ceph/ -e MON_IP=192.168.178.222 -e CEPH_PUBLIC_NETWORK=192.168.178.0/24 --ip=192.168.178.222 --network=macvlan0 --name ceph_mon3 ceph/daemon mon
+                    docker run -d -v /docker/ceph/data/lib:/var/lib/ceph/ -v /docker/ceph/data/etc:/etc/ceph -e CEPHFS_CREATE=0 -e MDS_NAME=mds-$(hostname)-b --ip=192.168.178.246 --network=macvlan0 --name ceph_mds_b ceph/daemon mds
+
+                    exit 0
+                \end{lstlisting}
+
+                The docker run commands are the same as above but executed in a specific order. One monitor node has to be launched first to create an initial cluster configuration.
+                Shortly thereafter follows a manager node. The next line deploys the keyring-file to the other bootstrap directories. Since all containers are deployed on a single machine, every node can access this keyring in its respective bootstrap directory. The script \textit{prepare.sh} and \textit{create.sh} executes the commands mentioned under the OSD part of section \ref*{config:docker} for each disk.
+                %The next strep is the creation of the filesystem. According to the docker documentation the FS will be created upon launch of the MDS node with the \textit{CEPHFS\_CREATE=1} parameter defined. However this didn't work properly in my case. The lines with \textit{docker exec ...} execute a command within the denominated container (in this case 
+                %\textit{ceph_mon1}) from the host shell. These three commands create the data pools and the filesystem, which requires as metadata pool and a data pool\textbf{ADD CEPH DOC HERE}.
+                The following lines are only the additional monitor and mds nodes being created. These are not strictly neccessary for the cluster to function but provide redundancy to secure the \textit{no single point of failure} design of CEPH.
 
     \section{System Analysis}
 
-        % what are the key points to analyze in the context
-
-        \subsection{Data Integrity}
-
-        % why this is important for databases (strippedn down version of mySQL section)
-
-        %distribution over PG, OSD, Hosts
-        %bluestore vs posix
-
-        %CEPH data striping:
-        % https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/1.2.3/html/red_hat_ceph_architecture/ceph_client_architecture#:~:text=Object%20Size%3A%20Objects%20in%20the,%2C%204MB%2C%20etc.).
-
-        \subsection{Raw performance test}
-
-        %scbench
-        %msqlslap
-
-        \subsection{Performance Penalty}\label{analysis:penalty}
-
-        %CephFS vs. Librados vs. native
-        %Bluestore vs POSIX
-
-        % IOPS vs raw throughput
-        % the point is: does docker make a difference here?
-
-        \subsection{Administration}\label{analysis:administration}
-
-        % Ceph Dashboard
-        % Grafana mySQL        
         
-        %first thought: no benefit in using containers to save time on setting up
-        %rather tediously trying to figure out how to set everything up - documentation rather sparse (generic examples)
-        %error with config -> fixed by using nautilus release
 
+        To measure the performance of the cluster, I chose to use two tools: \textit{scbench} and \textit{mysqlslap}. Both tools give detailed insight into
+        the critical performances figures for such a cluster. As for the raw read/write performance test I can only evaluate the performance of the cluster at hand for reasons mentioned 
+        in \ref*{system:my-setup}. However since my server has different storage technologies, I can evaluate the database performance with the cluster, an HDD and SSD.
 
-        \subsection{Tuning}\label{analysis:tuning}
+        \subsection{SCBENCH} 
 
-        [very briefly]
+            % scbench: https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/4/html/administration_guide/ceph-performance-benchmarking
+        
+            This tool measures the raw performance of a CEPH cluster by performing a write and subsequent read test sequential and random\textbf{REF TO REDHAT}.
+            I performed Three different tests with different loads on the cluster:
 
-        % KVM vs QEMU
-        % librbd vs krbd
-        % percona container in krbd module vs. mysql docker on librbd
-        % other tuning parametres
+            \begin{itemize}
+                \item 10 seconds with 16 threads
+                \item 30 seconds with 32 threads
+                \item 60 seconds with 64 threads
+            \end{itemize}
+
+            My goal is to load the cluster in a way that eventually all caches and short term performance enhancements become saturated to gauge the stable long term performance.
+            What exactly scbench does under the hood, is described in great detail under \textbf{RESEARCH LINK}.
+
+            The result are as follows:
+
+            \begin{figure}[H]
+                \centering
+                \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
+                \caption{10 seconds with 16 threads}
+                \label{fig:10-16}
+            \end{figure}   
+
+            \begin{figure}[H]
+                \centering
+                \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
+                \caption{10 seconds with 16 threads}
+                \label{fig:30-32}
+            \end{figure}   
+
+            \begin{figure}[H]
+                \centering
+                \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
+                \caption{10 seconds with 16 threads}
+                \label{fig:60-64}
+            \end{figure}   
+
+            \textbf{MAKE TEST AND WRITE CONCLUSION}
+
+        \section{Mysqlslap}
+
+            some lorem ipsum going on here...
+
 
     \section{Conclusion}
 

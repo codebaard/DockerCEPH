@@ -32,11 +32,11 @@ plt.grid()
 plt.xlim(x_min,x_max)
 plt.ylim(0,0.05)
 
-plt.title('Readspeed Sequential',fontsize=10)
+plt.title('Read IOPS Sequential',fontsize=10)
 ax.legend()
 
-plt.xlabel('Bandwitdth [MB/s]')
-plt.ylabel('Histogram')
+plt.xlabel('IOPS [1/s]')
+plt.ylabel('p[1/s]')
 
-plt.savefig("Read_Bandwidth.png")
-plt.show()
+plt.savefig("Read_IOPS_sequential.png")
+#plt.show()

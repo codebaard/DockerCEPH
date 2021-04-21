@@ -2,19 +2,22 @@ import matplotlib.pyplot as plt
 import scipy.stats
 import numpy as np
 
+
 x_min = 0.0
-x_max = 5
+x_max = 1800
 
-mean_10 = 0.024462
-std_10 = 0.
+mean_10 = 1702.354
+std_10 = 10.3859
 
-mean_30 = 24
-std_30 = 17.6777
+mean_30 = 424.601
+std_30 = 35.4608
 
-mean_60 = 15
-std_60 = 11.2694
+mean_60 = 243.565
+std_60 = 21.80546
 
-x = np.linspace(x_min, x_max, 100)
+x = np.linspace(x_min, x_max, 500)
+
+## make scatterplot!
 
 y_10 = scipy.stats.norm.pdf(x,mean_10,std_10)
 y_30 = scipy.stats.norm.pdf(x,mean_30,std_30)
@@ -30,13 +33,13 @@ ax.plot(x, y_60, label='60s', color='coral')
 plt.grid()
 
 plt.xlim(x_min,x_max)
-plt.ylim(0,0.05)
+plt.ylim(0,0.04)
 
-plt.title('Readspeed Sequential',fontsize=10)
+plt.title('Read Bandwidth Random',fontsize=10)
 ax.legend()
 
 plt.xlabel('Bandwitdth [MB/s]')
-plt.ylabel('Histogram')
+plt.ylabel('p[MB/s]')
 
-plt.savefig("Read_Bandwidth.png")
-plt.show()
+plt.savefig("Read_Bandwidth_Rand.png")
+#plt.show()

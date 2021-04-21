@@ -2,20 +2,19 @@ import matplotlib.pyplot as plt
 import scipy.stats
 import numpy as np
 
-
 x_min = 0.0
-x_max = 75
+x_max = 0.5
 
-mean_10 = 28.8482
-std_10 = 16.2705
+mean_10 = 0.03655
+std_10 = 0.000371
 
-mean_30 = 31.3261
-std_30 = 16.054
+mean_30 = 0.147263
+std_30 = 0.017623
 
-mean_60 = 61.727
-std_60 = 11.3876
+mean_60 = 0.260001
+std_60 = 0.025047
 
-x = np.linspace(x_min, x_max, 100)
+x = np.linspace(x_min, x_max, 1000)
 
 y_10 = scipy.stats.norm.pdf(x,mean_10,std_10)
 y_30 = scipy.stats.norm.pdf(x,mean_30,std_30)
@@ -31,13 +30,13 @@ ax.plot(x, y_60, label='60s', color='coral')
 plt.grid()
 
 plt.xlim(x_min,x_max)
-plt.ylim(0,0.05)
+plt.ylim(0,35)
 
-plt.title('Latency Write',fontsize=10)
+plt.title('Read Latency Random',fontsize=10)
 ax.legend()
 
 plt.xlabel('Latency [s]')
 plt.ylabel('p[s]')
 
-plt.savefig('Write_Latency.png')
+plt.savefig("Read_Latency_Random.png")
 #plt.show()

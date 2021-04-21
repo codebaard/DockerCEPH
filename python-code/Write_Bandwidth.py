@@ -33,11 +33,11 @@ plt.grid()
 plt.xlim(x_min,x_max)
 plt.ylim(0,0.6)
 
-plt.title('Write speeds',fontsize=10)
+plt.title('Bandwidth Write',fontsize=10)
 ax.legend()
 
 plt.xlabel('Bandwitdth [MB/s]')
-plt.ylabel('Histogram')
+plt.ylabel('p[MB/s]')
 
 plt.savefig("Write_Bandwidth.png")
-plt.show()
+#plt.show()

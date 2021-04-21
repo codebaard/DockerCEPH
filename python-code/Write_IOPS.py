@@ -33,11 +33,11 @@ plt.grid()
 plt.xlim(x_min,x_max)
 plt.ylim(0,2.3)
 
-plt.title('IOPS',fontsize=10)
+plt.title('IOPS Write',fontsize=10)
 ax.legend()
 
 plt.xlabel('IOPS [1/s]')
-plt.ylabel('Histogram')
+plt.ylabel('p[1/s]')
 
 plt.savefig("Write_IOPS.png")
-plt.show()
+#plt.show()

@@ -598,7 +598,7 @@
             % scbench: https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/4/html/administration_guide/ceph-performance-benchmarking
         
             This tool measures the raw performance of a CEPH cluster by performing a write and subsequent read test sequential and random\textbf{REF TO REDHAT}.
-            I performed Three different tests with different loads on the cluster:
+            I performed three different tests with different loads on the cluster:
 
             \begin{itemize}
                 \item 10 seconds with 16 threads
@@ -609,30 +609,76 @@
             My goal is to load the cluster in a way that eventually all caches and short term performance enhancements become saturated to gauge the stable long term performance.
             What exactly scbench does under the hood, is described in great detail under \textbf{RESEARCH LINK}.
 
-            The result are as follows:
+            This test yields three different performance parametres for read and write actions:
 
-            \begin{figure}[H]
-                \centering
-                \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
-                \caption{10 seconds with 16 threads}
-                \label{fig:10-16}
-            \end{figure}   
+            \begin{itemize}
+                \item Bandwidth
+                \item IOPS
+                \item Latency
+            \end{itemize}
 
-            \begin{figure}[H]
-                \centering
-                \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
-                \caption{10 seconds with 16 threads}
-                \label{fig:30-32}
-            \end{figure}   
+            For reading the test was executed for sequential and random access of the data. However the test for sequential read access weren't sufficient enough to evaluate, therefore I will only show the results for random read, which is more important in the context of database operations anyway.
 
-            \begin{figure}[H]
-                \centering
-                \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
-                \caption{10 seconds with 16 threads}
-                \label{fig:60-64}
-            \end{figure}   
+            \textit{All graphs were created from the raw data, which scbench provides. The code to reproduce these results is available under}\textit{[ADD REPOLINK]}
 
-            \textbf{MAKE TEST AND WRITE CONCLUSION}
+            \paragraph{Write performance}
+
+                Before executing the read performance test, \textit{scbench} has to execute the write test in order to have readable data available.
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Write_Bandwidth.png}}
+                    \caption{Normal distribution of the writespeed for three different tests}
+                    \label{fig:write-speed}
+                \end{figure}   
+
+                Figure\ref*{fig:write-speed} shows the saturation of the write speed with increasing load. On write operations with a short duration,
+                the cost of the whole procedure of contacting the cluster to receive the correct endpoints to write to is relatively high, therefore the initial
+                period where no data is written has an overall bigger impact on the measurement. As the client is writing data to the OSDs, the writespeed increases.
+                However after the different caching entities within the cluster become saturated, the writespeed eventually stabilizes at around 2.5MB/s.
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Write_IOPS.png}}
+                    \caption{Normal distribution of the write IOPS for three different tests}
+                    \label{fig:write-iops}
+                \end{figure}   
+
+                The write IOPS in figure \ref*{fig:write-iops} exhibits the same result: Initial IOPS start slow due to the cost of initializing, subsequently increasing
+                as the initialization has a smaller impact on the results but with saturation decreasing again.
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Write_Latency.png}}
+                    \caption{Normal distribution of the write latency for three different tests}
+                    \label{fig:write-latency}
+                \end{figure}   
+
+                The write latency for the 10s and 30s mark shown in figure \ref*{fig:write-latency} is about the same. The saturated case after 60s however is an interesting anomaly. The best explanation is that the process of reorganizing data and placement groups takes away performance and therefore increasing latency.
+                This is especially plausible since all data transactions are processed over the same physical network interface since this cluster does not have a dedicated network for this task\textbf{[INSERT NOTE TO SETUP HERE]}.
+
+            \paragraph{Read performance}
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Read_Bandwidth_Rand.png}}
+                    \caption{Normal distribution of the readspeed for three different tests}
+                    \label{fig:read-speed}
+                \end{figure}   
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Read_IOPS_Rand.png}}
+                    \caption{Normal distribution of the read IOPS for three different tests}
+                    \label{fig:read-iops}
+                \end{figure}   
+
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{Read_Latency_Random.png}}
+                    \caption{Normal distribution of the read latency for three different tests}
+                    \label{fig:read-latency}
+                \end{figure}  
 
         \section{Mysqlslap}
 

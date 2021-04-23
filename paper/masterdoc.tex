@@ -617,7 +617,7 @@
                 \item Latency
             \end{itemize}
 
-            For reading the test was executed for sequential and random access of the data. However the test for sequential read access weren't sufficient enough to evaluate, therefore I will only show the results for random read, which is more important in the context of database operations anyway.
+            For reading the test was executed for sequential and random access of the data. However the tests for sequential read access weren't sufficient enough to evaluate, therefore I will only show the results for random read, which is more important in the context of database operations anyway.
 
             \textit{All graphs were created from the raw data, which scbench provides. The code to reproduce these results is available under}\textit{[ADD REPOLINK]}
 
@@ -634,7 +634,7 @@
 
                 Figure\ref*{fig:write-speed} shows the saturation of the write speed with increasing load. On write operations with a short duration,
                 the cost of the whole procedure of contacting the cluster to receive the correct endpoints to write to is relatively high, therefore the initial
-                period where no data is written has an overall bigger impact on the measurement. As the client is writing data to the OSDs, the writespeed increases.
+                period where no data is written has an overall bigger impact on the measurement. As the client is writing more data to the OSDs, the writespeed increases.
                 However after the different caching entities within the cluster become saturated, the writespeed eventually stabilizes at around 2.5MB/s.
 
                 \begin{figure}[H]
@@ -644,8 +644,7 @@
                     \label{fig:write-iops}
                 \end{figure}   
 
-                The write IOPS in figure \ref*{fig:write-iops} exhibits the same result: Initial IOPS start slow due to the cost of initializing, subsequently increasing
-                as the initialization has a smaller impact on the results but with saturation decreasing again.
+                The write IOPS in figure \ref*{fig:write-iops} exhibits the same result: Initial IOPS start slow due to the cost of initializing, subsequently increasing as the initialization has a smaller impact on the results but with saturation decreasing again. 
 
                 \begin{figure}[H]
                     \centering
@@ -659,12 +658,18 @@
 
             \paragraph{Read performance}
 
+                This test reads the previously created data during the write test randomly.
+
                 \begin{figure}[H]
                     \centering
                     \fbox{\includegraphics[width=\imgScale\textwidth]{Read_Bandwidth_Rand.png}}
                     \caption{Normal distribution of the readspeed for three different tests}
                     \label{fig:read-speed}
                 \end{figure}   
+
+                The read spead starts at around 1700MB/s, which is multiple times more than the other more saturated tests were able to achieve. 
+                Considered the hardware architecture of the cluster, this value is only really achievable with caching data within the RAM.
+                In fact the hardware requirements for a CEPH-Cluster demand around 2GB of RAM per OSD\textbf{REFERENCE HERE}.
 
                 \begin{figure}[H]
                     \centering
@@ -673,12 +678,18 @@
                     \label{fig:read-iops}
                 \end{figure}   
 
+                The IOPS paint the same picture: very high cluster speed on the first few seconds with a more stabilized value after saturation of the caching chain. An interesting point is the high standard deviation before everything becomes saturated. I presume that it is the timespan, where
+                some disks cache is already saturated and other caches are still filling up. Also the CPU of the host machine has only four logical cores and therefore quickly becomes task-saturated. The other cores in the cluster aren't that fast either. This results in the value stabilizing after around a minute.
+
                 \begin{figure}[H]
                     \centering
                     \fbox{\includegraphics[width=\imgScale\textwidth]{Read_Latency_Random.png}}
                     \caption{Normal distribution of the read latency for three different tests}
                     \label{fig:read-latency}
                 \end{figure}  
+
+                The very fast response in the first ten seconds is the best argument that the data actually is read from the RAM instead 
+                of the disks. The very small standard deviation can't really be achieved with different kinds of disks on iSCSI hosts. Referring to figure \ref*{fig:write-latency}, it is likely the same mechanic of reorganizing placement groups and data objects within the cluster which leads to increased latency. Also in conjunction with task saturation of the host machine.
 
         \section{Mysqlslap}
 

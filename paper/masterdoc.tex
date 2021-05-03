@@ -75,17 +75,6 @@
     \tableofcontents
 
     \begin{abstract}
-        %Setting up and operating a storage cluster with high availability is a complex task. 
-        %Modern paradigms like containerization and orchestration are a way of abstracting away some these complexities.
-        %However, running a fault resistant storage cluster in a stateless and ephemeral containerized environment might seem contradicting at first.
-        %Therefore the following paper will adress these problems, scrutinize performance and point out the inherent keypoints of this concept.
-        %To put this analysis into context, a mySQL database will act as a use case to create a frame of reference.
-
-        %An abstract summarizes, usually in one paragraph of 300 words or less, the major aspects of the entire paper in a prescribed sequence that includes: 
-        %1) the overall purpose of the study and the research problem(s) you investigated; 
-        %2) the basic design of the study; 
-        %3) major findings or trends found as a result of your analysis; and, 
-        %4) a brief summary of your interpretations and conclusions.
 
         Setting up and operating a storage cluster with high availability is a complex task. 
         By using containerization, it is possible to abstract away and encapsulate some repetitive tasks.
@@ -93,12 +82,7 @@
         CEPH-Cluster, where the individual daemons are entirely running within a containerized environment.
         To put the findings into a frame of reference, this study utilizes a mySQL-database which has 
         special requirements on data storage. The key points in terms of advantages and disadvantages,
-        data integrity, performance and administion are scrutinized. Major findings are that ...
-        [insert findings here later] ... .
-        Therefore running a distributed CEPH-storage in a containerization environment is ... 
-        [draw conclusion] ... .
-
-
+        data integrity, performance and administion are scrutinized. Major findings are that there is a performace penalty which can be alleviated by optizing the cluster configuration. However, these findings in the context of this paper are sometimes theoretical in nature since some constraints of the experimental environment had a significant impact on the results of the study.
 
     \end{abstract}
 
@@ -161,7 +145,7 @@
             further optimizations for one or another particular use case. To adress these would go beyond the scope of this paper.
             Nevertheless a brief outlook on further considerations will be provided at the end of chapter \ref*{analysis:tuning}.
 
-        \subsection{Definition of research goal}   
+        \subsection{Definition of research goal}\label{research-goal}
         
             The goal of this research is to evaluate if setting up a CEPH-storage cluster with containers is possible and if so, 
             if it is a feasable option for a production environment. In order to make a conclusive assessment, three main points 
@@ -222,7 +206,6 @@
 
         \subsubsection{Containerization}\label{system:containerization}
 
-            %whats a container and why is it nice compared to VM, etc.
             Although in the previous text the term containerization was mentioned a few times already, there was no
             definitive definition of what a container or more general containerization. Firstly it is important to establish
             that containers are not \textit{something like} a virtual machine. In fact virtual machines are entire systems 
@@ -581,8 +564,8 @@
 
                 The docker run commands are the same as above but executed in a specific order. One monitor node has to be launched first to create an initial cluster configuration.
                 Shortly thereafter follows a manager node. The next line deploys the keyring-file to the other bootstrap directories. Since all containers are deployed on a single machine, every node can access this keyring in its respective bootstrap directory. The script \textit{prepare.sh} and \textit{create.sh} executes the commands mentioned under the OSD part of section \ref*{config:docker} for each disk.
-                %The next strep is the creation of the filesystem. According to the docker documentation the FS will be created upon launch of the MDS node with the \textit{CEPHFS\_CREATE=1} parameter defined. However this didn't work properly in my case. The lines with \textit{docker exec ...} execute a command within the denominated container (in this case 
-                %\textit{ceph_mon1}) from the host shell. These three commands create the data pools and the filesystem, which requires as metadata pool and a data pool\textbf{ADD CEPH DOC HERE}.
+                The next strep is the creation of the filesystem. According to the docker documentation the FS will be created upon launch of the MDS node with the \textit{CEPHFS\_CREATE=1} parameter defined. However this didn't work properly in my case. The lines with \textit{docker exec ...} execute a command within the denominated container (in this case 
+                \textit{ceph\_mon1}) from the host shell. These three commands create the data pools and the filesystem, which requires as metadata pool and a data pool\textbf{ADD CEPH DOC HERE}.
                 The following lines are only the additional monitor and mds nodes being created. These are not strictly neccessary for the cluster to function but provide redundancy to secure the \textit{no single point of failure} design of CEPH.
 
     \section{System Analysis}
@@ -691,44 +674,126 @@
                 The very fast response in the first ten seconds is the best argument that the data actually is read from the RAM instead 
                 of the disks. The very small standard deviation can't really be achieved with different kinds of disks on iSCSI hosts. Referring to figure \ref*{fig:write-latency}, it is likely the same mechanic of reorganizing placement groups and data objects within the cluster which leads to increased latency. Also in conjunction with task saturation of the host machine.
 
-        \section{Mysqlslap}
+        \section{Mysqlslap}\label{mysqlslap}
 
-            some lorem ipsum going on here...
+            The second test was a dedicatated load test specifically for SQL-Database\footnote{Although I used mySQL in this example, this applies also to other SQL-Based Database distributions.} workloads. The \textit{mysqlslap} application allows for some configuration on how the test is carried out:
 
-            % single core process
-            % concurrent users is multiple of corecount
-            % did some testing to figure out best user/query combination to avoid reference system bottlenecks
-            % resulsting script: ...
-            % tested on: system reference nVME SSD, Docker host SSD, Docker host HDD, CEPH Cluster
+            \begin{itemize}
+                \item Concurrent users
+                \item Iterations
+                \item Size and structure of automatically generated database table
+                \item Total number of queries
+            \end{itemize}
 
-            %problem: mysql docker does not work well with ceph cluster - normal mysql server did 
+            I load tested the database on three different storage technologies to point out potential advanteages and disadvantages of ceph in contrast to a purely HDD and SSD based storage solution - both were discrete disks in this example. The mySQL-Server was running on a VM\footnote{Virtual Machine} with the CentOS8 distribution.
+            The VM ran on a physically seperate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image\textbf{INSERT LINK TO DOCKER HUB}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for different reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS.
 
+            To carry out the load test, I wrote the following script:
+
+            \begin{lstlisting}
+                #!/bin/bash
+
+                ## db connection
+                dbuser=<mysql-user>
+                dbhost=127.0.0.1
+                dbpass=<mysql-password>
+
+                ## db test config
+                intcols=5
+                charcols=20
+
+                ## iterations over concurrent users
+                user_min=4
+                user_max=20
+                iterations=3
+                samples=5
+
+                ## queries per perfomance batch
+                total_queries=1024
+
+                for ((s=0; s<$samples; s++)) do
+                    echo "Starting Sample number: $s"
+
+                    for (( i=$user_min; i<=user_max; i++)) do
+                        
+                        queries_corrected=$((total_queries + (total_queries % $i)))
+                        mysqlslap --user=$dbuser --host=$dbhost  --password=$dbpass --concurrency=$i --iterations=$iterations --number-int-cols=$intcols --number-char-cols=$charcols --number-of-queries=$queries_corrected --auto-generate-sql -v
+
+                    done
+                done
+
+                exit 0
+            \end{lstlisting}
+
+            The core of the script is the \textit{mysqlslap} command being executed with different parametres.
+            For the correct interpretation of the result I want to emphasize out a few key points:
+
+            \paragraph{Single Threaded} operations of each user-session. The VM had four virtual cores, so a test with less than four concurrent user sessions doesn't yield any better or worse results.
+
+            \paragraph{queries\_corrected} is a variable, which uses the modulo operation to correct the total number of queries to be executed slightly in order to always have every user executing the same amount of queries and don't run into bottlenecks due to uneven load-distribution.
+
+            \paragraph{Samples and Iterations} is how I configured the script to execute multiple executions of the same load test in order to average out possible outliers. Each iteration is the same number depicted by \textit{total\_queries} n-times within the same \textit{mysqlslap} command. Each sample is the repetition of the 4-20 users cycle with three iterations each. This means, the same load test is carried out 15 times for each concurrent user setting.
+
+            \begin{figure}[H]
+                \centering
+                \fbox{\includegraphics[width=\imgScale\textwidth]{mysqlslap.png}}
+                \caption{mySQL load test comparison between ceph/HDD/SSD}
+                \label{fig:mysql-loadtest}
+            \end{figure}   
+
+            The horizontal axis is concurrent users and the vertical scale the seconds until all 2048 queries were completed in average with the minimum and maximum time. The exact results of this test are made available in the Github repository\textbf{PUT GH LINK HERE}. By far the best performance was yielded by the SSD-based storage. There is a slight increase in perfomance with more concurrent users, since with a low session count neither the network interface nor the SSD and client machine has reached a bottleneck yet.
+            At around 9-10 concurrent user sessions, the optimal performace is reached and declines slightly with more sessions. However due to the almost instantaneous nature of data access on SSDs, the major part of that time will be network roundtrip times, which add up over many queries.
+
+            The same behaviour but much more distinct is shown by the HDD based storage. Since these drives have a measureable access time, this adds up to a more distinct increase of performance with increasing concurrency.
+            This will likely be caused by optimizations in the access patterns of the physical disk. I do not have an explanation for the anomaly at the 13 user mark. Since even the minimum time is such an outlier compared to the 12 and 14 user mark, this can't be explained by some random occuring system-behaviour.
+
+            \textbf{INSERT CEPH TEST HERE ONCE READY!!!}
+            % make remark of switching off some OSDs
 
     \section{Conclusion}
 
+        In this section I want to summarize the advantages and disadvantages of running a ceph-cluster by means of a containerized daemon structure.
+
         \subsection{Advantages}
 
-        %in comparison to conventional (Host Level)
+            \paragraph{Ease of configuration} Once I figured out how to set up the OSDs and other daemons, it is fairly straighforward to set up a working cluster. I managed to compress this process into a single script\textbf{GH LINK HERE PLS}. The vanilla docker image is already configured in a way, which doesn't require extensive configuration beyond specifying the container parametres and preparing the disks.
+
+            \paragraph{Orchestration} by using containers, the cluster could potentially be controlled on a higher level by means of orchestration tools such as \textit{kubernetes} or \textit{docker-swarm}. There also exists several solutions to abstract the cluster management: \textit{ceph-ansible} and \textit{rook}. \textbf{PUT REFERENCES HERE}. While reading through several issues on Github, it became clear, that these are used in production environments, which is a sign that these solutions are matured enough to be considered stable and performant.
+
+            \paragraph{Updates} Since every container is stateless and ephemeral, the update process is in theory easier than an application running on bare metal. To update a container, it is sufficient to change the container-definition. However, how an upgrade of a whole cluster is carried out in general is beyond the scope of this paper.
+
+            \paragraph{Shared KV-Backend} The docker image provides a way to use \textit{etcd} as a KV-storage\footnote{Key-Value} to share configurations and keyrings. This is handy to setup a cluster on multiple machines and distribute the cluster configuration automatically. This wasn't in the scope of my experiments, since all containers in my case were running on the same host and had access to the same harddrive.
+
+            \paragraph{Multiple Daemons on the same host} In general it is not a problem to launch multiple MON, MGR, OSD and MDS containers on the same host. In fact, if orchestrated with kubernetes for example, it may happen if not explicitly specified otherwise that one worker-node\footnote{A host which runs kubernetes services}, hosts two or more monitor containers. However, as my test in section \ref{mysqlslap} clearly indicates, it is not recommended to run multiple OSD containers on the same host for reasons stated.
 
         \subsection{Disadvantages}
 
-        %in comparison to conventional (Host Level)        
+            \paragraph{Documentation} Although the Docker-Image has a fairly comprehensive documentation, I found that this approach is not very well documented in contrast to the usual \textit{bare-metal} usage of ceph. All official documentation are written on the assumption that the cluster is running directly on the host machine. Github Issues and Stackoverflow provide some degree of help but it is not comparable to the official ceph documentation by ceph and RedHat. An excpetion of this are the ready-to-use distributions with \textit{ceph-ansible} and \textit{rook}, which proofed to be helpflul in some cases.
+
+            \paragraph{Performance} Although it should be obvious, it is clear that running such an application which relies on being "as-close" to the hardware as possible, comes with a perfomance penalty regardless of the degree of optimizations. If this really makes a huge difference on beefy machines is beyond the scope of this paper but should be taken into consideration nevertheless. 
+
+            \paragraph{Persistence} As already explained in section \textbf{INSERT SECTIOON HERE}, containers are by principle ephemeral and stateless. Although persistent volumes and KV-Backends alleviate these properties for the most part, it creates some additional overhead, which wouldn't exist otherwise.
 
         \subsection{Performance}
-    
-        % make remark about performance tuning and tiering -> beyond the scope of this
-        % i.e. pool configs, stripe config, safety with crush config, etc.
-        % also there might be another interface for mySQL needs like RADOSGW or RBD
-        % but this would not be comparable to a single tennant mySQL application
 
-        %which implementation of radoes does the container use? krbd vs librbd
-        % remark to section with OSD in Architecture: "ease of use" vs "performance" tradeoff
+            Although I was not able to compare the containerized solution to a cluster, which runs on \textit{bare-metal}, 
+            the nature of containers allows for the educated guess that this solution at least will never be as performant. The extent of the difference however will depend on the machine, the cluster is running on. 
+
+            There are several factors, which might have a bigger overall impact on the performance of the whole cluster, as I learned during the course of my reasearch. Optimize on these points might even be more effective in increasing performance such that the small performance penalty of running a containerized environment is worth the extra benefits. Possible optimizations could be:
+
+            \paragraph{Running the MDS-Damon on fast SSD-based storage} Since the MDS only serves small but large amounts of data, it is totally feasable to use smaller but faster SSDs. Best performance would be reached by using modern nVME drives. Within the cluster configuration the placement groups for the metadata can be configured to be stored on these special drives. It is best practice to have a limited amount of users per any given MDS so there might even exist multiple sychronized copies of the same drive within the cluster to further improve performace.
+
+            \paragraph{Use optimized Applications} Ceph does not only offer a filesystem, wich allows for the cluster to be used as virtual disk or block device but also libraries and API's to be directly implemented in clientside applications. The RedHat study\cite{redhatstudy} used an optimized mySQL distribution, which directly used the ceph kernel module to circumvent the filesystem bottleneck and yielded excellent results.
+
+            \paragraph{Tune the cluster configuration} This might include tweaking the configuration for pool sizes, placement groups, stripe configs, object sizes and safety configuration such as crush map to the physical structure of the cluster in order to achieve best performance. The official ceph documentation provides extensive insight on how to do this.\textbf{INSERT REFERENCE HERE}
 
         \subsection{In Summary}
 
-        % summarize the keypoints in regard to the introduction
+        To conclude my research goals pointed out in section \ref*{research-goal}, I found that like the study carried out by RedHat\cite{redhatstudy} a ceph cluster is well suited to be used as storage for a database in terms of data integrity. My test of removing OSDs during the mysql load test, showed that ceph handles failing disks in critical applications very well. However the fact that the OSDs are hosted within a containerized environment doesn't make a difference here. 
+        
+        I was not able to show a performance gain however for reasons stated in section \ref*{mysqlslap}.
+        On the administion part I found that using containers drastically descreased the work neccessary to set up a cluster. However it cost me more work upfront to figure out the correct configuration. Therefore I'd conclude it does make sense for a huge production environment, where administion is a bigger concern than clusters which are set up once and subsequently aren't touched again as it is the case in smaller or mid-sized deployments.
       
-
     \bibliography{references}        
     \bibliographystyle{IEEEtran}
 

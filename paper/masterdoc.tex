@@ -65,7 +65,7 @@
 \title{Running a CEPH-Cluster from a containerized infrastructure}
 \subtitle{Performance test with a mySQL-Database}
 \author{Julius Neudecker \\ Bachelor of Science \\ \href{mailto:julius.neudecker@haw-hamburg.de}{julius.neudecker@haw-hamburg.de}}
-\date{April 2021}
+\date{May 2021}
 
 
 \begin{document}
@@ -363,7 +363,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \fbox{\includegraphics[width=\imgScale\textwidth]{placeholder.jpg}}
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{architecture.jpeg}}
                     \caption{Hardware Diagram}
                     \label{fig:hardware-diagram}
                 \end{figure}   
@@ -674,81 +674,116 @@
                 The very fast response in the first ten seconds is the best argument that the data actually is read from the RAM instead 
                 of the disks. The very small standard deviation can't really be achieved with different kinds of disks on iSCSI hosts. Referring to figure \ref*{fig:write-latency}, it is likely the same mechanic of reorganizing placement groups and data objects within the cluster which leads to increased latency. Also in conjunction with task saturation of the host machine.
 
-        \section{Mysqlslap}\label{mysqlslap}
+            \subsection{Mysqlslap}\label{mysqlslap}
 
-            The second test was a dedicatated load test specifically for SQL-Database\footnote{Although I used mySQL in this example, this applies also to other SQL-Based Database distributions.} workloads. The \textit{mysqlslap} application allows for some configuration on how the test is carried out:
+                The second test was a dedicatated load test specifically for SQL-Database\footnote{Although I used mySQL in this example, this applies also to other SQL-Based Database distributions.} workloads. The \textit{mysqlslap} application allows for some configuration on how the test is carried out:
 
-            \begin{itemize}
-                \item Concurrent users
-                \item Iterations
-                \item Size and structure of automatically generated database table
-                \item Total number of queries
-            \end{itemize}
+                \begin{itemize}
+                    \item Concurrent users
+                    \item Iterations
+                    \item Size and structure of automatically generated database table
+                    \item Total number of queries
+                \end{itemize}
 
-            I load tested the database on three different storage technologies to point out potential advanteages and disadvantages of ceph in contrast to a purely HDD and SSD based storage solution - both were discrete disks in this example. The mySQL-Server was running on a VM\footnote{Virtual Machine} with the CentOS8 distribution.
-            The VM ran on a physically seperate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image\textbf{INSERT LINK TO DOCKER HUB}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for different reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS.
+                I load tested the database on three different storage technologies to point out potential advanteages and disadvantages of ceph in contrast to a purely HDD and SSD based storage solution - both were discrete disks in this example. The mySQL-Server was running on a VM\footnote{Virtual Machine} with the CentOS8 distribution.
+                The VM ran on a physically seperate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image\textbf{INSERT LINK TO DOCKER HUB}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for different reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS.
 
-            To carry out the load test, I wrote the following script:
+                To carry out the load test, I wrote the following script:
 
-            \begin{lstlisting}
-                #!/bin/bash
+                \begin{lstlisting}
+                    #!/bin/bash
 
-                ## db connection
-                dbuser=<mysql-user>
-                dbhost=127.0.0.1
-                dbpass=<mysql-password>
+                    ## db connection
+                    dbuser=<mysql-user>
+                    dbhost=127.0.0.1
+                    dbpass=<mysql-password>
 
-                ## db test config
-                intcols=5
-                charcols=20
+                    ## db test config
+                    intcols=5
+                    charcols=20
 
-                ## iterations over concurrent users
-                user_min=4
-                user_max=20
-                iterations=3
-                samples=5
+                    ## iterations over concurrent users
+                    user_min=4
+                    user_max=20
+                    iterations=3
+                    samples=5
 
-                ## queries per perfomance batch
-                total_queries=1024
+                    ## queries per perfomance batch
+                    total_queries=1024
 
-                for ((s=0; s<$samples; s++)) do
-                    echo "Starting Sample number: $s"
+                    for ((s=0; s<$samples; s++)) do
+                        echo "Starting Sample number: $s"
 
-                    for (( i=$user_min; i<=user_max; i++)) do
-                        
-                        queries_corrected=$((total_queries + (total_queries % $i)))
-                        mysqlslap --user=$dbuser --host=$dbhost  --password=$dbpass --concurrency=$i --iterations=$iterations --number-int-cols=$intcols --number-char-cols=$charcols --number-of-queries=$queries_corrected --auto-generate-sql -v
+                        for (( i=$user_min; i<=user_max; i++)) do
+                            
+                            queries_corrected=$((total_queries + (total_queries % $i)))
+                            mysqlslap --user=$dbuser --host=$dbhost  --password=$dbpass --concurrency=$i --iterations=$iterations --number-int-cols=$intcols --number-char-cols=$charcols --number-of-queries=$queries_corrected --auto-generate-sql -v
 
+                        done
                     done
-                done
 
-                exit 0
-            \end{lstlisting}
+                    exit 0
+                \end{lstlisting}
 
-            The core of the script is the \textit{mysqlslap} command being executed with different parametres.
-            For the correct interpretation of the result I want to emphasize out a few key points:
+                The core of the script is the \textit{mysqlslap} command being executed with different parametres.
+                For the correct interpretation of the result I want to emphasize out a few key points:
 
-            \paragraph{Single Threaded} operations of each user-session. The VM had four virtual cores, so a test with less than four concurrent user sessions doesn't yield any better or worse results.
+                \paragraph{Single Threaded} operations of each user-session. The VM had four virtual cores, so a test with less than four concurrent user sessions doesn't yield any better or worse results.
 
-            \paragraph{queries\_corrected} is a variable, which uses the modulo operation to correct the total number of queries to be executed slightly in order to always have every user executing the same amount of queries and don't run into bottlenecks due to uneven load-distribution.
+                \paragraph{queries\_corrected} is a variable, which uses the modulo operation to correct the total number of queries to be executed slightly in order to always have every user executing the same amount of queries and don't run into bottlenecks due to uneven load-distribution.
 
-            \paragraph{Samples and Iterations} is how I configured the script to execute multiple executions of the same load test in order to average out possible outliers. Each iteration is the same number depicted by \textit{total\_queries} n-times within the same \textit{mysqlslap} command. Each sample is the repetition of the 4-20 users cycle with three iterations each. This means, the same load test is carried out 15 times for each concurrent user setting.
+                \paragraph{Samples and Iterations} is how I configured the script to execute multiple executions of the same load test in order to average out possible outliers. Each iteration is the same number depicted by \textit{total\_queries} n-times within the same \textit{mysqlslap} command. Each sample is the repetition of the 4-20 users cycle with three iterations each. This means, the same load test is carried out 15 times for each concurrent user setting.
 
-            \begin{figure}[H]
-                \centering
-                \fbox{\includegraphics[width=\imgScale\textwidth]{mysqlslap.png}}
-                \caption{mySQL load test comparison between ceph/HDD/SSD}
-                \label{fig:mysql-loadtest}
-            \end{figure}   
+                \begin{figure}[H]
+                    \centering
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{mysqlslap.png}}
+                    \caption{mySQL load test comparison between ceph/HDD/SSD}
+                    \label{fig:mysql-loadtest}
+                \end{figure}   
 
-            The horizontal axis is concurrent users and the vertical scale the seconds until all 2048 queries were completed in average with the minimum and maximum time. The exact results of this test are made available in the Github repository\textbf{PUT GH LINK HERE}. By far the best performance was yielded by the SSD-based storage. There is a slight increase in perfomance with more concurrent users, since with a low session count neither the network interface nor the SSD and client machine has reached a bottleneck yet.
-            At around 9-10 concurrent user sessions, the optimal performace is reached and declines slightly with more sessions. However due to the almost instantaneous nature of data access on SSDs, the major part of that time will be network roundtrip times, which add up over many queries.
+                The horizontal axis is concurrent users and the vertical scale the seconds until all 2048 queries were completed in average with the minimum and maximum time. The exact results of this test are made available in the Github repository\textbf{PUT GH LINK HERE}. By far the best performance was yielded by the SSD-based storage. There is a slight increase in perfomance with more concurrent users, since with a low session count neither the network interface nor the SSD and client machine has reached a bottleneck yet.
+                At around 9-10 concurrent user sessions, the optimal performace is reached and declines slightly with more sessions. However due to the almost instantaneous nature of data access on SSDs, the major part of that time will be network roundtrip times, which add up over many queries.
 
-            The same behaviour but much more distinct is shown by the HDD based storage. Since these drives have a measureable access time, this adds up to a more distinct increase of performance with increasing concurrency.
-            This will likely be caused by optimizations in the access patterns of the physical disk. I do not have an explanation for the anomaly at the 13 user mark. Since even the minimum time is such an outlier compared to the 12 and 14 user mark, this can't be explained by some random occuring system-behaviour.
+                The same behaviour but much more distinct is shown by the HDD based storage. Since these drives have a measureable access time, this adds up to a more distinct increase of performance with increasing concurrency.
+                This will likely be caused by optimizations in the access patterns of the physical disk. I do not have an explanation for the anomaly at the 13 user mark. Since even the minimum time is such an outlier compared to the 12 and 14 user mark, this can't be explained by some random occuring system-behaviour.
 
-            \textbf{INSERT CEPH TEST HERE ONCE READY!!!}
-            % make remark of switching off some OSDs
+                The test of the ceph storage didn't turn out as expected. In fact the time to finish all queries was longer by one magnitudes in comparison to the HDD and two magnitude in case of the SSD.
+                I have a few possible explanations for this behaviour and I think every one of these factors contributed at least partially:
+                
+                \paragraph{No NAT Reflection} The Docker macvlan network creates a virtual mac-adress for each container. However, it does not support NAT-Reflection, which results in every packet being routed to the central switch and back to the same physical host, which adds a lot of round-trip-time to the whole process.
+
+                \paragraph{IOWAIT bottleneck} During the load test I watched the behaviour of the kernel of the docker-host and it showed that a significant portion - about 1/2 of the total CPU-time was allocated to IOWAIT processes. This indicates that communications with devices and interfaces are very slow. As to where this bottleneck is I could not find a definitive answer. My guess is that the sheer amount of virtual disks in conjunction with a high number of OSDs and the fact, that a few of them were iSCSI caused significant communication overhead, which adds up quickly in this situation.
+
+                \paragraph{Missing OSD Network} As I explained in section \textbf{ARCHITECTURE LINK}, my setup doesn't have a dedicated network for the OSD traffic. It is possible that by using the same interface for server-client and OSD-OSD communication resulted in saturating the network interface, which isn't particularly high performance either. This is also a a good explanation for the IOWAIT kernel phenomenon.
+
+                \paragraph{Slow disks} I used USB pen drives on the ARMv7 host, which were exported as iSCSI devices. I is possible that they degraded due to the heavy read and write load under the constant load and therefore decreased drastically in performace.
+
+            \subsection{Disk Failure}
+
+                One of my research goals defined in section\ref*{research-goal} was to examine the data integrity for database applications. During a dedicated loadtest I created a simulated drive failure by marking one or more OSDs as \textit{out}. This triggers a redistribution and replication of affected data objects as well as a change of the PG-Mapping. Ceph handled this process transparent for the client without any data loss.
+
+                The MGR-Node creates an output of the cluster state, where the state of the placement groups is logged:
+
+                \begin{lstlisting}
+                    1 undersized+peered, 3 active+undersized, 42 active+clean, 7 active+clean+laggy, 7 stale+active+clean, 20 peering, 5 undersized+degraded+peered, 12 active+undersized+degraded; 1.1 GiB data, 7.0 GiB used, 27 GiB / 34 GiB avail; 9.6 MiB/s wr, 2 op/s; 105/1119 objects degraded (9.383%)
+                \end{lstlisting}
+
+                This is an example log output showing the status of a degraded and recovering cluster.
+                Each unit depicts a placement group. \textbf{Active+Clean} is the desired state, whereas \textbf{stale} depicts an unresponsive pg. This could be network issues or a failed host, like in this case. If the log shows \textbf{peering}, it is undergoing the process of recovering the \textbf{degraded} data objects. During this process some pg's might have the temporary state of \textbf{active+undersized}, when the data shuffling is not yet complete and imbalances between the disks are existing. This is shown in the ceph OSD overview:
+
+                \begin{lstlisting}
+                    ceph osd df tree
+                \end{lstlisting}
+
+                brings up a general overview of the OSD status, which can be viewed here\textbf{PUT IN GITHUB HERE}. Interesting is the last line:
+
+                \begin{lstlisting}
+                    MIN/MAX VAR: 0.66/1.36  STDDEV: 6.22
+                \end{lstlisting}
+
+                This shows the imbalance of the pg placement on the different disks. The cluster could be configured to prefer certain disks for certain pgs, as with the metadata pool.
+
+                \paragraph{Concluding} Ceph handles failure of disks gracefully and transparent as long as the failure can be contained and not too many disks fail. With a failed disk, the cluster will eventually reach a stable state after some time, when the data objects are rearranged on the disks. For databases this resulsts in reduced I/O performance but protects from data failures.
 
     \section{Conclusion}
 

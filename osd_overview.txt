@@ -1,0 +1,22 @@
+ID   CLASS  WEIGHT   REWEIGHT  SIZE     RAW USE  DATA     OMAP     META     AVAIL    %USE   VAR   PGS  STATUS  TYPE NAME
+ -1         0.03323         -   34 GiB  9.3 GiB  4.2 GiB  1.8 MiB  5.1 GiB   25 GiB  27.32  1.00    -          root default
+ -9         0.00330         -  3.4 GiB  929 MiB  393 MiB  494 KiB  536 MiB  2.5 GiB  26.57  0.97    -              host 07a5b4c3667e
+  3    hdd  0.00330   1.00000  3.4 GiB  929 MiB  393 MiB  494 KiB  536 MiB  2.5 GiB  26.57  0.97   33      up          osd.3
+ -5         0.00330         -  3.4 GiB  1.3 GiB  499 MiB  560 KiB  803 MiB  2.1 GiB  37.26  1.36    -              host 48ceb5178932
+  4    hdd  0.00330   1.00000  3.4 GiB  1.3 GiB  499 MiB  560 KiB  803 MiB  2.1 GiB  37.26  1.36   35      up          osd.4
+ -3         0.00369         -  3.8 GiB  1.0 GiB  483 MiB   14 KiB  570 MiB  2.7 GiB  27.43  1.00    -              host 54a89a8b8089
+  0    hdd  0.00369   1.00000  3.8 GiB  1.0 GiB  483 MiB   14 KiB  570 MiB  2.7 GiB  27.43  1.00   33      up          osd.0
+-13         0.00389         -  4.0 GiB  736 MiB  428 MiB   37 KiB  308 MiB  3.3 GiB  17.99  0.66    -              host 7858dcb3906f
+  8    hdd  0.00389   1.00000  4.0 GiB  736 MiB  428 MiB   37 KiB  308 MiB  3.3 GiB  17.99  0.66   28      up          osd.8
+-19         0.00389         -  4.0 GiB  1.2 GiB  432 MiB   98 KiB  806 MiB  2.8 GiB  30.27  1.11    -              host 9a6191a54ace
+  6    hdd  0.00389   1.00000  4.0 GiB  1.2 GiB  432 MiB   98 KiB  806 MiB  2.8 GiB  30.27  1.11   31      up          osd.6
+-17         0.00389         -  4.0 GiB  763 MiB  423 MiB   15 KiB  339 MiB  3.3 GiB  18.64  0.68    -              host b75b0dcd1906
+  5    hdd  0.00389   1.00000  4.0 GiB  763 MiB  423 MiB   15 KiB  339 MiB  3.3 GiB  18.64  0.68   26      up          osd.5
+-15         0.00389         -  4.0 GiB  1.4 GiB  578 MiB    7 KiB  867 MiB  2.6 GiB  35.33  1.29    -              host c66bfe841039
+  7    hdd  0.00389   1.00000  4.0 GiB  1.4 GiB  578 MiB    7 KiB  867 MiB  2.6 GiB  35.33  1.29   33      up          osd.7
+-11         0.00369         -  3.7 GiB  1.1 GiB  559 MiB   26 KiB  569 MiB  2.6 GiB  29.41  1.08    -              host d0832e36caa3
+  2    hdd  0.00369   1.00000  3.7 GiB  1.1 GiB  559 MiB   26 KiB  569 MiB  2.6 GiB  29.41  1.08   39      up          osd.2
+ -7         0.00369         -  3.8 GiB  936 MiB  543 MiB  578 KiB  392 MiB  2.9 GiB  24.24  0.89    -              host ffedcc58a353
+  1    hdd  0.00369   1.00000  3.8 GiB  936 MiB  543 MiB  578 KiB  392 MiB  2.9 GiB  24.24  0.89   33      up          osd.1
+                        TOTAL   34 GiB  9.3 GiB  4.2 GiB  1.8 MiB  5.1 GiB   25 GiB  27.32
+MIN/MAX VAR: 0.66/1.36  STDDEV: 6.22

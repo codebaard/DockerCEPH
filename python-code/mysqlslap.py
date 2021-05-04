@@ -47,7 +47,7 @@ def main(argv):
     ceph = ax.errorbar(csv3['clients'], csv3['average'], yerr=[csv3['minimum'], csv3['maximum']], fmt='o')
     ceph.set_label('ceph')
 
-    ax.set_ylim((0,70))
+    ax.set_ylim((0,500))
     ax.set_title('Performance of three tested storage technologies')
     ax.legend()
 

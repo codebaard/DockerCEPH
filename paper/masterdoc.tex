@@ -557,8 +557,6 @@
 
         \subsection{SCBENCH} 
 
-            % scbench: https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/4/html/administration_guide/ceph-performance-benchmarking
-        
             This tool measures the raw performance of a CEPH cluster by performing a write and subsequent read test for sequential and random disk access \cite{cephperformancebenchmark}. I performed three different tests with different loads on the cluster:
 
             \begin{itemize}
@@ -749,7 +747,7 @@
                     ceph osd df tree
                 \end{lstlisting}
 
-                Which brings up a general overview of the OSD status, which can be viewed here  \cite{osdoverviewtxtatmainc}. Interesting is the last line:
+                % Which brings up a general overview of the OSD status, which can be viewed here  \cite{osdoverviewtxtatmainc}. Interesting is the last line:
 
                 \begin{lstlisting}
                     MIN/MAX VAR: 0.66/1.36  STDDEV: 6.22
@@ -791,7 +789,6 @@
             There are several factors, which might have a bigger overall impact on the performance of the whole cluster, as I learned over the course of my reasearch. Optimization on these points might even be more effective in increasing performance such that the small performance penalty of running a containerized environment is worth the extra benefits. Possible optimizations could be:
 
             \paragraph{Running the MDS-Damon on fast SSD-based storage} Since the MDS only serves small amounts of data but a large quantity of files, it is totally feasable to use smaller but faster SSDs. Best performance would be reached by using modern nVME drives. Within the cluster configuration the placement groups for the metadata can be configured to be stored on these special drives. It is best practice to have a limited amount of users per any given MDS, because having a fast responding MDS is crucial for good cluster performance.
-        
 
             \paragraph{Use optimized Applications} Ceph does not only offer a filesystem, wich allows for the cluster to be used as virtual disk or block device but also libraries and API's to be directly implemented in clientside applications. The RedHat study\cite{redhatstudy} used an optimized mySQL distribution, which directly used the ceph kernel module to circumvent the filesystem bottleneck and yielded excellent results.
 

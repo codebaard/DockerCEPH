@@ -352,7 +352,7 @@
 
                 \begin{figure}[H]
                     \centering
-                    \fbox{\includegraphics[width=\imgScale\textwidth]{architecture.jpeg}}
+                    \fbox{\includegraphics[width=\imgScale\textwidth]{architecture.png}}
                     \caption{Hardware Diagram}
                     \label{fig:hardware-diagram}
                 \end{figure}   
@@ -461,8 +461,8 @@
                     \end{lstlisting}
 
                     There are some important things to consider here: firstly the \textit{--pid=host} configuration is neccessary to prevent that the host system
-                    runs out of open file handles. This is a known bug, which is explained here on the Github page of the Docker Image \cite{cephdockerbug}. The 
-                    \textit{--privileged=true} setting is neccessary to give the required access to disks from within the container. However from a security standpoint this is not good practice and should never be used in that way in a production environment! \textit{OSD\_BLUESTORE=1} configures the way CEPH stores the data in the background and \textit{OSD\_ID=X} defines the ID under which the OSD will be reffered to by the cluster.
+                    runs out of open file handles. This is a known bug, which is explained here on the Github page of the Docker Image %\cite{cephdockerbug}. 
+                    The \textit{--privileged=true} setting is neccessary to give the required access to disks from within the container. However from a security standpoint this is not good practice and should never be used in that way in a production environment! \textit{OSD\_BLUESTORE=1} configures the way CEPH stores the data in the background and \textit{OSD\_ID=X} defines the ID under which the OSD will be reffered to by the cluster.
 
                 \paragraph{Metadata Nodes}
 
@@ -553,15 +553,13 @@
     \section{System Analysis}
 
         To measure the performance of the cluster, I chose to use two tools: \textit{scbench} and \textit{mysqlslap}. Both tools give detailed insight into
-        the critical performances figures for such a cluster. As for the raw read/write performance test I can only evaluate the performance of the cluster at hand for reasons mentioned 
-        in \ref*{system:my-setup}. However since my server has different storage technologies, I can evaluate the database performance with the cluster, an HDD and SSD.
+        the critical performances figures of such a cluster. Although there are seveal factors which are affecting overall performance, this test only provides a rather coarse overview of the system under test in general. For a more precise evaluation of the performance difference between docker and native ceph, parametres such as network latency, disk I/O and other system constraints have to be evaluated beforehand.
 
         \subsection{SCBENCH} 
 
             % scbench: https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/4/html/administration_guide/ceph-performance-benchmarking
         
-            This tool measures the raw performance of a CEPH cluster by performing a write and subsequent read test sequential and random\textbf{REF TO REDHAT}.
-            I performed three different tests with different loads on the cluster:
+            This tool measures the raw performance of a CEPH cluster by performing a write and subsequent read test for sequential and random disk access \cite{cephperformancebenchmark}. I performed three different tests with different loads on the cluster:
 
             \begin{itemize}
                 \item 10 seconds with 16 threads
@@ -569,10 +567,7 @@
                 \item 60 seconds with 64 threads
             \end{itemize}
 
-            My goal is to load the cluster in a way that eventually all caches and short term performance enhancements become saturated to gauge the stable long term performance.
-            What exactly scbench does under the hood, is described in great detail under \textbf{RESEARCH LINK}.
-
-            This test yields three different performance parametres for read and write actions:
+            My goal is to load test the cluster in a way that eventually all caches and short term performance enhancements become saturated to see the stable long term performance. This test yields three different performance figures for read and write actions:
 
             \begin{itemize}
                 \item Bandwidth
@@ -580,9 +575,8 @@
                 \item Latency
             \end{itemize}
 
-            For reading the test was executed for sequential and random access of the data. However the tests for sequential read access weren't sufficient enough to evaluate, therefore I will only show the results for random read, which is more important in the context of database operations anyway.
-
-            \textit{All graphs were created from the raw data, which scbench provides. The code to reproduce these results is available under}\textit{[ADD REPOLINK]}
+            The reading test was executed for sequential and random access of the data. However the tests for sequential read access didn't provide sufficient enough data to evaluate, therefore I will only show the results for random read, which is more important in the context of database operations anyway.
+            All graphs were created from the raw data, which scbench provides. The code to reproduce these results is available under \cite{ghceph}.
 
             \paragraph{Write performance}
 
@@ -595,10 +589,8 @@
                     \label{fig:write-speed}
                 \end{figure}   
 
-                Figure\ref*{fig:write-speed} shows the saturation of the write speed with increasing load. On write operations with a short duration,
-                the cost of the whole procedure of contacting the cluster to receive the correct endpoints to write to is relatively high, therefore the initial
-                period where no data is written has an overall bigger impact on the measurement. As the client is writing more data to the OSDs, the writespeed increases.
-                However after the different caching entities within the cluster become saturated, the writespeed eventually stabilizes at around 2.5MB/s.
+                Figure \ref*{fig:write-speed} shows the saturation of the write speed with increasing load. On write operations with a short duration,
+                the cost of the whole procedure of contacting the cluster to receive the correct endpoints to write to is relatively high, therefore the initial period where no data is written has an overall bigger impact on the measurement. As the client is writing more data to the OSDs, the writespeed increases in average. However after the different caching entities within the cluster become saturated, the writespeed eventually stabilizes at around 2.5MB/s.
 
                 \begin{figure}[H]
                     \centering
@@ -607,7 +599,8 @@
                     \label{fig:write-iops}
                 \end{figure}   
 
-                The write IOPS in figure \ref*{fig:write-iops} exhibits the same result: Initial IOPS start slow due to the cost of initializing, subsequently increasing as the initialization has a smaller impact on the results but with saturation decreasing again. 
+                The write IOPS in figure \ref*{fig:write-iops} exhibits the same result: Initial IOPS start slow due to the cost of initializing, subsequently increasing, which is depicted by the standard deviation becoming bigger. So there are more samples with higher IOPS than before. 
+                With saturation, the overall IOPS goes back to an even worse value compared to the start of the test. The reason being likely that at this stage the reorganizing of PGs takes away some performance.
 
                 \begin{figure}[H]
                     \centering
@@ -617,7 +610,7 @@
                 \end{figure}   
 
                 The write latency for the 10s and 30s mark shown in figure \ref*{fig:write-latency} is about the same. The saturated case after 60s however is an interesting anomaly. The best explanation is that the process of reorganizing data and placement groups takes away performance and therefore increasing latency.
-                This is especially plausible since all data transactions are processed over the same physical network interface since this cluster does not have a dedicated network for this task\textbf{[INSERT NOTE TO SETUP HERE]}.
+                This is especially plausible since all data transactions are processed over the same physical network interface since this cluster does not have a dedicated network for this task.
 
             \paragraph{Read performance}
 
@@ -631,8 +624,8 @@
                 \end{figure}   
 
                 The read spead starts at around 1700MB/s, which is multiple times more than the other more saturated tests were able to achieve. 
-                Considered the hardware architecture of the cluster, this value is only really achievable with caching data within the RAM.
-                In fact the hardware requirements for a CEPH-Cluster demand around 2GB of RAM per OSD\textbf{REFERENCE HERE}.
+                Considered the hardware architecture of the cluster, this value is only really achievable with caching data in the RAM.
+                In fact the hardware requirements for a CEPH-Cluster demands 2GB of RAM minimum per OSD for that reason \cite{HardwareRecommendationsCephDocume}.
 
                 \begin{figure}[H]
                     \centering
@@ -641,8 +634,7 @@
                     \label{fig:read-iops}
                 \end{figure}   
 
-                The IOPS paint the same picture: very high cluster speed on the first few seconds with a more stabilized value after saturation of the caching chain. An interesting point is the high standard deviation before everything becomes saturated. I presume that it is the timespan, where
-                some disks cache is already saturated and other caches are still filling up. Also the CPU of the host machine has only four logical cores and therefore quickly becomes task-saturated. The other cores in the cluster aren't that fast either. This results in the value stabilizing after around a minute.
+                The IOPS test paints the same picture: very high cluster speed on the first few seconds with a more stabilized value after saturation of the caching chain. An interesting point is the high standard deviation before everything becomes saturated. I assume that this is the timespan, where some caches are already saturated and other caches are still filling up. Also the CPU of the host machine has only four logical cores and therefore quickly becomes task-saturated. The other cores in the cluster aren't very fast either. This results in the value stabilizing after around a minute.
 
                 \begin{figure}[H]
                     \centering
@@ -666,7 +658,7 @@
                 \end{itemize}
 
                 I load tested the database on three different storage technologies to point out potential advanteages and disadvantages of ceph in contrast to a purely HDD and SSD based storage solution - both were discrete disks in this example. The mySQL-Server was running on a VM\footnote{Virtual Machine} with the CentOS8 distribution.
-                The VM ran on a physically seperate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image\textbf{INSERT LINK TO DOCKER HUB}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for different reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS.
+                The VM ran on a physically seperate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image \cite{mysqlDockerHub}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS. Apart from giving the tests on the discrete disks a slight disadvantage, it doesn't really make a difference.
 
                 To carry out the load test, I wrote the following script:
 
@@ -708,9 +700,9 @@
                 The core of the script is the \textit{mysqlslap} command being executed with different parametres.
                 For the correct interpretation of the result I want to emphasize out a few key points:
 
-                \paragraph{Single Threaded} operations of each user-session. The VM had four virtual cores, so a test with less than four concurrent user sessions doesn't yield any better or worse results.
+                \paragraph{Single Threaded} The operations of each user-session is single threaded. The VM had four virtual cores, so a test with less than four concurrent user sessions wouldn't yield any better or worse results.
 
-                \paragraph{queries\_corrected} is a variable, which uses the modulo operation to correct the total number of queries to be executed slightly in order to always have every user executing the same amount of queries and don't run into bottlenecks due to uneven load-distribution.
+                \paragraph{queries\_corrected} is a variable, which uses the modulo operation to correct the total number of executed queries slightly. A few more operations won't have any great impact on the test campaign. This creates an evenly distribution of all tests across all concurrent user sessions. 
 
                 \paragraph{Samples and Iterations} is how I configured the script to execute multiple executions of the same load test in order to average out possible outliers. Each iteration is the same number depicted by \textit{total\_queries} n-times within the same \textit{mysqlslap} command. Each sample is the repetition of the 4-20 users cycle with three iterations each. This means, the same load test is carried out 15 times for each concurrent user setting.
 
@@ -721,22 +713,24 @@
                     \label{fig:mysql-loadtest}
                 \end{figure}   
 
-                The horizontal axis is concurrent users and the vertical scale the seconds until all 2048 queries were completed in average with the minimum and maximum time. The exact results of this test are made available in the Github repository\textbf{PUT GH LINK HERE}. By far the best performance was yielded by the SSD-based storage. There is a slight increase in perfomance with more concurrent users, since with a low session count neither the network interface nor the SSD and client machine has reached a bottleneck yet.
+                The horizontal axis is concurrent users and the vertical scale the seconds until all 2048 queries were completed in average with the minimum and maximum time. The exact results of this test are available in the Github repository \cite{ghceph}. By far the best performance was yielded by the SSD-based storage. There is a slight increase in perfomance with more concurrent users, since with a low session count neither the network interface nor the SSD and client machine has reached a bottleneck yet.
                 At around 9-10 concurrent user sessions, the optimal performace is reached and declines slightly with more sessions. However due to the almost instantaneous nature of data access on SSDs, the major part of that time will be network roundtrip times, which add up over many queries.
 
-                The same behaviour but much more distinct is shown by the HDD based storage. Since these drives have a measureable access time, this adds up to a more distinct increase of performance with increasing concurrency.
-                This will likely be caused by optimizations in the access patterns of the physical disk. I do not have an explanation for the anomaly at the 13 user mark. Since even the minimum time is such an outlier compared to the 12 and 14 user mark, this can't be explained by some random occuring system-behaviour.
+                The same behaviour but much more distinct is shown by the HDD based storage. Since these drives have a longer access time, this adds up to a more distinct increase of performance with increasing concurrency.
+                This will likely be caused by optimizations in the access patterns of the physical disk. I do not have an explanation for the anomaly at the 13 user mark. Since even the minimum time is such an outlier compared to the 12 and 14 user mark, this can't be explained by some random occuring system-behaviour especially due to the fact that the test was carried out 15 times and yielded a similar result every time.
 
                 The test of the ceph storage didn't turn out as expected. In fact the time to finish all queries was longer by one magnitudes in comparison to the HDD and two magnitude in case of the SSD.
                 I have a few possible explanations for this behaviour and I think every one of these factors contributed at least partially:
                 
-                \paragraph{No NAT Reflection} The Docker macvlan network creates a virtual mac-adress for each container. However, it does not support NAT-Reflection, which results in every packet being routed to the central switch and back to the same physical host, which adds a lot of round-trip-time to the whole process.
+                \paragraph{No NAT Reflection} The Docker \textit{macvlan} network creates a virtual mac-adress for each container. However, it does not support NAT-Reflection, which results in every packet being routed through the physical network interface to the main switch and back, which adds a lot of round-trip-time to the whole process.
 
-                \paragraph{IOWAIT bottleneck} During the load test I watched the behaviour of the kernel of the docker-host and it showed that a significant portion - about 1/2 of the total CPU-time was allocated to IOWAIT processes. This indicates that communications with devices and interfaces are very slow. As to where this bottleneck is I could not find a definitive answer. My guess is that the sheer amount of virtual disks in conjunction with a high number of OSDs and the fact, that a few of them were iSCSI caused significant communication overhead, which adds up quickly in this situation.
+                \paragraph{IOWAIT bottleneck} During the load test I watched the behaviour of the kernel of the docker-host and it showed that a significant portion - about 1/2 of the total CPU-time was allocated to IOWAIT processes. This indicates that communications with devices and interfaces are very slow. As to where this bottleneck is I could not find a definitive answer. My guess is that the sheer amount of virtual disks in conjunction with a high number of OSDs and the fact, that a few of them were iSCSI devices, caused significant communication overhead, which adds up quickly in this situation.
 
-                \paragraph{Missing OSD Network} As I explained in section \textbf{ARCHITECTURE LINK}, my setup doesn't have a dedicated network for the OSD traffic. It is possible that by using the same interface for server-client and OSD-OSD communication resulted in saturating the network interface, which isn't particularly high performance either. This is also a a good explanation for the IOWAIT kernel phenomenon.
+                \paragraph{Missing OSD Network} As I explained in section \ref*{system:my-setup}, my setup doesn't have a dedicated network for the OSD traffic. It is possible that by using the same interface for server-client and OSD-OSD communication resulted in saturating the network interface, which isn't particularly high performance either. This is also a a good explanation for the IOWAIT kernel phenomenon.
 
-                \paragraph{Slow disks} I used USB pen drives on the ARMv7 host, which were exported as iSCSI devices. I is possible that they degraded due to the heavy read and write load under the constant load and therefore decreased drastically in performace.
+                \paragraph{Slow disks} I used USB pen drives on the ARMv7 host, which were exported as iSCSI devices. I is possible that these drives degraded due to the heavy read and write load under the constant load and therefore decreased drastically in performace.
+
+                One thing which is quite interesting though is that with ever increasing concurrent user load, the average time tends to decrease. This is a sign of an optimized access pattern for multiple data objects in the cluster.
 
             \subsection{Disk Failure}
 
@@ -749,21 +743,21 @@
                 \end{lstlisting}
 
                 This is an example log output showing the status of a degraded and recovering cluster.
-                Each unit depicts a placement group. \textbf{Active+Clean} is the desired state, whereas \textbf{stale} depicts an unresponsive pg. This could be network issues or a failed host, like in this case. If the log shows \textbf{peering}, it is undergoing the process of recovering the \textbf{degraded} data objects. During this process some pg's might have the temporary state of \textbf{active+undersized}, when the data shuffling is not yet complete and imbalances between the disks are existing. This is shown in the ceph OSD overview:
+                Each unit depicts a placement group. \textbf{Active+Clean} is the desired state, whereas \textbf{stale} depicts an unresponsive pg. This could be a network issues or a failed host, like in this case. If the log shows \textbf{peering}, it is undergoing the process of recovering the \textbf{degraded} data objects. During this process some pg's might have the temporary state of \textbf{active+undersized}, when the data shuffling is not yet complete and imbalances between the disks are existing. This is shown in the ceph OSD overview:
 
                 \begin{lstlisting}
                     ceph osd df tree
                 \end{lstlisting}
 
-                brings up a general overview of the OSD status, which can be viewed here\textbf{PUT IN GITHUB HERE}. Interesting is the last line:
+                Which brings up a general overview of the OSD status, which can be viewed here  \cite{osdoverviewtxtatmainc}. Interesting is the last line:
 
                 \begin{lstlisting}
                     MIN/MAX VAR: 0.66/1.36  STDDEV: 6.22
                 \end{lstlisting}
 
-                This shows the imbalance of the pg placement on the different disks. The cluster could be configured to prefer certain disks for certain pgs, as with the metadata pool.
+                This shows the imbalance of the pg placement on the different disks. The cluster could be configured to prefer certain disks for certain pgs, as with the metadata pool. This would favor faster disks or hosts with a better connection speed. These are possbile considerations for cost vs. performance optimizations.
 
-                \paragraph{Concluding} Ceph handles failure of disks gracefully and transparent as long as the failure can be contained and not too many disks fail. With a failed disk, the cluster will eventually reach a stable state after some time, when the data objects are rearranged on the disks. For databases this resulsts in reduced I/O performance but protects from data failures.
+                \paragraph{Conclusion} Ceph handles failure of disks gracefully and transparent as long as the failure can be contained and not too many disks fail. With a failed disk, the cluster will eventually reach a stable state after some time, when the data objects are rearranged on the disks. The resulting state will have less storage than the previous one due to storage being traded for stability. Therefore it is best practice to not fill the clusters up completely. For databases this will result in temporarily reduced I/O performance but protects from data getting corrupted.
 
     \section{Conclusion}\label{conclusion}
 

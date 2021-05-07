@@ -82,7 +82,7 @@
         CEPH-Cluster, where the individual daemons are entirely running within a containerized environment.
         To put the findings into a frame of reference, this study utilizes a mySQL-database which has 
         special requirements on data storage. The key points in terms of advantages and disadvantages,
-        data integrity, performance and administion are scrutinized. Major findings are that there is a performace penalty which can be alleviated by optimizing the cluster configuration. However, these findings in the context of this paper are sometimes theoretical in nature since some constraints of the experimental environment had a significant impact on the results of the study.
+        data integrity, performance and administration are scrutinized. Major findings are that there is a performace penalty which can be alleviated by optimizing the cluster configuration. However, these findings in the context of this paper are sometimes theoretical in nature since some constraints of the experimental environment had a significant impact on the results of the study.
 
     \end{abstract}
 
@@ -92,9 +92,8 @@
         way of storing data and information. Considerations about data throughput and 
         IOPS\footnote{Input/Output Operations per Second} are also a major design parameter on modern storage solutions.
         These different storage solutions provide different approaches on these considerations. For any given use case, there
-        exist several options to adress these. Depending on the architecture and scope of the problem some are better
-        suited than others. A few major considerations are apart from scalability, reliability and speed also cost effectiveness,
-        vendor lock-in, complexity and granular customizability.
+        exists several options to address these. Depending on the architecture and scope of the problem some are better
+        suited than others. A few major considerations are apart from scalability, reliability, portability and speed also cost effectiveness, vendor lock-in, complexity and granular customizability.
 
         Generally hardware based solutions have advantages in terms of raw performance but they often have significant disadvantages
         when it comes to vendor lock-in, easy scalability or restoration of corrupted disks. Software and network based solutions are
@@ -114,14 +113,15 @@
         by RedHat in 2014, CEPH is gaining popularity steadily since its introduction as figure \ref*{fig:ceph-market-share} aims to show.
 
         Another modern important concept which is increasingly shaping modern technology stacks is \textit{OS level virtualization} or
-        \textit{containerization} as its colloquially called. This way of deploying applications and services decreased the complexity of deploying several services and application on any given host dramatically by removing confliciting components and other means.
+        \textit{containerization} as its colloquially called. This way of deploying applications and services decreased the complexity of deploying several services and application on any given host dramatically by providing each service with an isolated runtime environment with the necessary dependencies
 
         Lastly, no storage solution exists without its use case. One major application, which requires flexible scaling are databases. 
         Scaling up databases is not an easy task as the tech stack is fairly monolithical in nature. A transparent, performant and scaleable storage solution would alleviate many problems.
 
         \subsection{Problem domains}\label{introduction}
             
-            Managing a highly available storage cluster is not a trivial task. Apart from provisioning and monitoring the hardware,
+            Managing a highly available storage cluster is not a trivial task because of creating configuration files and making all applications and services work in coexistence is sometimes tedious work. Unforeseen edge cases and undiscovered bugs are creating an additional layer of complexity. Often securitry policies and concerns also come into play. 
+            Apart from provisioning and monitoring the hardware,
             setting up multiple systems concurrently is a daunting task. Nowadays with infrastructure automation tools like Salt, Chef or Puppet, 
             this is easier than ever. However, it can still be a tedious task to tweak the configuration of these tools
             in order to make it work on a complex or diverse infrastructure. Especially in times when upates and EOL\footnote{End Of Life} events
@@ -134,8 +134,7 @@
             One way to isolate these problems is \textit{OS Level Virtualization}. By doing so, every application or application stack 
             exists within a so called \textit{Container} and is therefore isolated from the host to a certain degree. 
             One inherent issue in this context is that they are stateless and ephemeral. This means that they can 
-            \textit{by principle} be created and deleted according to momentary requirements. This process can be fully automated 
-            \textit{orchestration software}. Therefore the virtualized production environment has to be
+            \textit{by principle} be created and deleted according to momentary requirements. This process can be fully automated by \textit{orchestration software}. Therefore the virtualized production environment has to be
             configured in a way that allows it to provide the stability which is required for a storage engine.
 
             Trying to overcome the difficulties in setting up and manage a CEPH cluster with containerization might seem contradicting
@@ -146,7 +145,7 @@
         \subsection{Definition of research goal}\label{research-goal}
         
             The goal of this study is to evaluate if setting up a CEPH-storage cluster with containers is possible and if so, 
-            if it is a feasable option for a production environment. In order to make a conclusive assessment, three main points 
+            if it is a iable option for a production environment. In order to make a conclusive assessment, three main points 
             have to be examined:
 
             \paragraph{Data Integrity}
@@ -161,14 +160,14 @@
                 Since performance is a main consideration in production environments, this is 
                 the second most important key point. Depending on the overall cost structure of the environment, 
                 a performance penalty might outweigh the benefits. In that case a containerized cluster 
-                would be \textit{technically} possible but not economically feasable. Depending on the use case
+                would be \textit{technically} possible but not economically feasible. Depending on the use case
                 the important metric also differs. Fileserving services like storage clouds or streaming services 
                 rely more on raw throughput. The data traffic with databases is generally rather small, therefore
                 IOPS\footnote{Input/Output Operations per Seconds} are more important.
 
             \paragraph{Administration}
 
-                One important reason to do reasearch in this topic is to evaluate if the time and effort to
+                One important reason to do research in this topic is to evaluate if the time and effort to
                 set up a cluster brings benefits in terms of administrative expenditure. At first sight a viable
                 metric could be the spent time from starting to have a cluster up and running. However, depending
                 on the production environment the results may vary to a wide degree. Therefore chapter \ref*{conclusion}
@@ -179,7 +178,7 @@
         
             Since containerization and CEPH are already well established technologies, this section gives a brief overview of 
             other research which was already conducted in this area.
-            RedHat in cooperation with Percona and Supermicro already conducted extensive research wheter it is feasable to
+            RedHat in cooperation with Percona and Supermicro already conducted extensive research whether it is feasible to
             run a SQL-Database on a CEPH-Cluster\cite{redhatstudy}. They concluded that indeed running a database on an 
             optimized CEPH-cluster exceeds industry standard database solutions. Furthermore scaling horizontally 
             is easier with a CEPH Cluster. Nevertheless it should be mentioned, that in this study the Percona 
@@ -187,7 +186,7 @@
             
             Hong et.al. used CEPH to create a framework which aims to mitigate handling issues with database containers.
             This includes the issues mentioned in chapter \ref*{introduction} that containers aren't persistent ways
-            to store data\cite{hong2019database}. However this paper does not host the whole database container on a CEPH-cluster but only the volume to store the database tables and has therefore only little relevante to this topic.
+            to store data\cite{hong2019database}. However this paper does not host the whole database container on a CEPH-cluster but only the volume to store the database tables and has therefore only little relevance to this topic.
             
             Although there are numerous other papers
             which discuss the process of setting up CEPH itself or in the context of an OpenStack environment,
@@ -206,8 +205,8 @@
             that containers are not \textit{something like} a virtual machine. In fact virtual machines are entire systems 
             which are executed on the hosts hypervisor\footnote{An abstraction layer for hardware and operating systems} and entirely self contained.
             This approach is really useful to deploy and maintain infrastructure since a machine with a defined behaviour can be
-            launched in little time with no effort. However in the domain of application development or microservices especially with CI/CD\footnote{Continuous Integration/Continuous Deployment} pipelines in mind, this is an uneccessary overhead.
-            Containers on the other hand are small entities, which contain only the neccessary components of an application or service to run and still have some degree of encapsulation to the host system.
+            launched in little time with no effort. However in the domain of application development or microservices especially with CI/CD\footnote{Continuous Integration/Continuous Deployment} pipelines in mind, this is an u necessary overhead.
+            Containers on the other hand are small entities, which contain only the  necessary components of an application or service to run and still have some degree of encapsulation to the host system.
 
             \begin{figure}[H]
                 \centering
@@ -233,7 +232,7 @@
             and runs on commodity hardware. 
 
             The general structure includes several services which manage different functions within the cluster. In the context of
-            CEPH these are called deamons, which are discussed in detail in the following sections.
+            CEPH these are called daemons, which are discussed in detail in the following sections.
 
             \begin{figure}[H]
                 \centering
@@ -322,7 +321,7 @@
 
             \subsubsection{Metadata Server - MDS}
 
-                The metadata server is not neccessary for the cluster to operate as RBD, storage bucket or via Librados API.
+                The metadata server is not  necessary for the cluster to operate as RBD, storage bucket or via Librados API.
                 However to provide a journaled filesystem via the CephFS, this service is needed to provide the filesystem metadata such
                 as permissions and timestamps. As stated from RedHat, it is best practice to deploy a MDS with big and fast nVME drives\cite{redhatstudy}.
                 These can be also used in conjunction with memcached, where the recent metadata are stored into the RAM of the MDS.
@@ -339,7 +338,7 @@
             In this section I'll go over the system architecture in my experiments since its understanding is vital to the understanding
             of the configuration of the containers later on.
 
-            Firstly, because of the Covid-19 pandemic I couldn't use the lab in the university so I had to rely on my personal ressources 
+            Firstly, because of the Covid-19 pandemic I couldn't use the lab in the university so I had to rely on my personal resources 
             in order to do my experiments. Since these are somewhat limited I configured a few things different than it would be usually done.
 
             \textit{I assume that the reader has a basic understanding of Docker and how commands are executed or how containers work in detail. Therefore topics which are immaterial to this topic won't be explained in great detail.}
@@ -358,9 +357,9 @@
                 \end{figure}   
 
                 Furthermore the Docker host is a server in production for serving websites and services. 
-                Therefore a certain amount of system ressources were already allocated to other running processes.
+                Therefore a certain amount of system resources were already allocated to other running processes.
                 Since my tests were exclusively conducted in the local network, the bandwith of the internet connection wasn't a concern either.
-                Usually a CEPH cluster uses two seperate networks: one for replicating data between the OSDs and one to client access to the cluster or configuration.
+                Usually a CEPH cluster uses two separate networks: one for replicating data between the OSDs and one to client access to the cluster or configuration.
                 In this case only one physical network was available, which has a bandwith of 1GBit/s
 
             \subsubsection{Docker Config for CEPH Image}\label{config:docker}
@@ -379,24 +378,24 @@
                 
                 Another issue is that the MON and OSD nodes run into timeout issues, when deployed on the same host and configured to use Dockers \textit{--net=host} option, as suggested by the official manual. This would effectively bind the ports of any container, which is configured in that way, directly to the host interface. 
                 I chose another approach: providing each container with a dedicated IP-Adress within the network. This is possible by using the \textit{MACVLAN} network
-                driver which is provided by the Docker engine. This allows every container which has this driver enabled to appear as a seperate host apart from the docker host. The IP is configured with the \textit{--ip=192.167.178.2XX} option.
+                driver which is provided by the Docker engine. This allows every container which has this driver enabled to appear as a separate host apart from the docker host. The IP is configured with the \textit{--ip=192.167.178.2XX} option.
 
                 The complete configuration is made available under a repository \cite{ghceph}.
 
                 \paragraph{Monitor Nodes}
 
                     The network configuration of the monitor nodes is of special interest here: The public network has to be configured in case there are two 
-                    distinct networks as explained in \ref{ceph:arch}. This is not neccessary for the other nodes since the configuration will be distributed
+                    distinct networks as explained in \ref{ceph:arch}. This is not  necessary for the other nodes since the configuration will be distributed
                     after the monitor nodes are online.
 
                     \begin{lstlisting}
-                        docker run -d \textbackslash
-                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
-                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
-                        -e MON_IP=192.168.178.220 \textbackslash
-                        -e CEPH_PUBLIC_NETWORK=192.168.178.0/24 \textbackslash
-                        --ip=192.168.178.220 \textbackslash
-                        --network=macvlan0 \textbackslash
+                        docker run -d \
+                        -v /docker/ceph/data/etc:/etc/ceph \
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \
+                        -e MON_IP=192.168.178.220 \
+                        -e CEPH_PUBLIC_NETWORK=192.168.178.0/24 \
+                        --ip=192.168.178.220 \
+                        --network=macvlan0 \
                         --name ceph_mon1 ceph/daemon mon                        
                     \end{lstlisting}
 
@@ -405,11 +404,11 @@
                     This container runs in parallel to a monitor node and doesn't need any special configuration. For a healthy cluster only one node instance is required.
 
                     \begin{lstlisting}                    
-                        docker run -d \textbackslash
-                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
-                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
-                        --ip=192.168.178.223 \textbackslash
-                        --network=macvlan0 \textbackslash
+                        docker run -d \
+                        -v /docker/ceph/data/etc:/etc/ceph \
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \
+                        --ip=192.168.178.223 \
+                        --network=macvlan0 \
                         --name ceph_mgr ceph/daemon mgr
                     \end{lstlisting}
 
@@ -423,60 +422,60 @@
                     prior to launching the preparation container on every drive to wipe out any existing partition table.
 
                     \begin{lstlisting}
-                        docker run --rm \textbackslash
-                        --privileged=true \textbackslash
-                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
-                        -v /var/log/ceph:/var/log/ceph/ \textbackslash
-                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
-                        -v /dev/:/dev/ \textbackslash
-                        -v /run/lock/lvm:/run/lock/lvm:z \textbackslash
-                        -v /run/lvm/:/run/lvm/ \textbackslash
-                        -v /var/run/udev/:/var/run/udev/:z \textbackslash
-                        --ip=192.168.178.230 \textbackslash
-                        --network=macvlan0 \textbackslash
-                        --entrypoint ceph-volume ceph/daemon lvm prepare \textbackslash
-                        --bluestore \textbackslash
-                        --data /dev/sdX \textbackslash
+                        docker run --rm \
+                        --privileged=true \
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \
+                        -v /var/log/ceph:/var/log/ceph/ \
+                        -v /docker/ceph/data/etc:/etc/ceph \
+                        -v /dev/:/dev/ \
+                        -v /run/lock/lvm:/run/lock/lvm:z \
+                        -v /run/lvm/:/run/lvm/ \
+                        -v /var/run/udev/:/var/run/udev/:z \
+                        --ip=192.168.178.230 \
+                        --network=macvlan0 \
+                        --entrypoint ceph-volume ceph/daemon lvm prepare \
+                        --bluestore \
+                        --data /dev/sdX \
                         --no-systemd                            
                     \end{lstlisting} 
 
                     When the disk is prepared, it appears as \textit{lvm-partition} with a ceph-prefix. The OSD node can then be started by executing the following command:
 
                     \begin{lstlisting}
-                        docker run -d \textbackslash
-                        --privileged=true \textbackslash
-                        --pid=host \textbackslash
-                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
-                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
-                        -v /dev/:/dev/ \textbackslash
-                        -v /run/udev/:/run/udev/ \textbackslash
-                        -e OSD_DEVICE=/dev/sde \textbackslash
-                        -e OSD_TYPE=disk \textbackslash
-                        -e OSD_BLUESTORE=1 \textbackslash
-                        -e CEPH_DAEMON=OSD_CEPH_VOLUME_ACTIVATE \textbackslash
-                        -e OSD_ID=0 \textbackslash
-                        --ip=192.168.178.230 \textbackslash
-                        --network=macvlan0 \textbackslash
+                        docker run -d \
+                        --privileged=true \
+                        --pid=host \
+                        -v /docker/ceph/data/etc:/etc/ceph \
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \
+                        -v /dev/:/dev/ \
+                        -v /run/udev/:/run/udev/ \
+                        -e OSD_DEVICE=/dev/sde \
+                        -e OSD_TYPE=disk \
+                        -e OSD_BLUESTORE=1 \
+                        -e CEPH_DAEMON=OSD_CEPH_VOLUME_ACTIVATE \
+                        -e OSD_ID=0 \
+                        --ip=192.168.178.230 \
+                        --network=macvlan0 \
                         --name ceph_osd_sde ceph/daemon osd
                     \end{lstlisting}
 
-                    There are some important things to consider here: firstly the \textit{--pid=host} configuration is neccessary to prevent that the host system
+                    There are some important things to consider here: firstly the \textit{--pid=host} configuration is  necessary to prevent that the host system
                     runs out of open file handles. This is a known bug, which is explained here on the Github page of the Docker Image %\cite{cephdockerbug}. 
-                    The \textit{--privileged=true} setting is neccessary to give the required access to disks from within the container. However from a security standpoint this is not good practice and should never be used in that way in a production environment! \textit{OSD\_BLUESTORE=1} configures the way CEPH stores the data in the background and \textit{OSD\_ID=X} defines the ID under which the OSD will be reffered to by the cluster.
+                    The \textit{--privileged=true} setting is  necessary to give the required access to disks from within the container. However from a security standpoint this is not good practice and should never be used in that way in a production environment! \textit{OSD\_BLUESTORE=1} configures the way CEPH stores the data in the background and \textit{OSD\_ID=X} defines the ID under which the OSD will be reffered to by the cluster.
 
                 \paragraph{Metadata Nodes}
 
-                    Since one phyisical host can host many different metadata nodes to provide peak performance, these MDS nodes have to be named uniquely. This is done 
+                    Since one physical host can host many different metadata nodes to provide peak performance, these MDS nodes have to be named uniquely. This is done 
                     by using the \textit{\$hostname-x} variable. Also the official image is recommending to set the \textit{CEPHFS\_CREATE=1} flag. On my setup however this resulted in an error and the filesystem was not being created. In my case I had to create the filesystem manually from within the monitor container by using the \textit{docker exec} command to open a terminal within the container. Therefore this flag has to be set to "0" in this case.
 
                     \begin{lstlisting}
-                        docker run -d \textbackslash
-                        -v /docker/ceph/data/lib:/var/lib/ceph/ \textbackslash
-                        -v /docker/ceph/data/etc:/etc/ceph \textbackslash
-                        -e CEPHFS_CREATE=0 \textbackslash
-                        -e MDS_NAME=mds-$(hostname)-a \textbackslash
-                        --ip=192.168.178.245 \textbackslash
-                        --network=macvlan0 \textbackslash
+                        docker run -d \
+                        -v /docker/ceph/data/lib:/var/lib/ceph/ \
+                        -v /docker/ceph/data/etc:/etc/ceph \
+                        -e CEPHFS_CREATE=0 \
+                        -e MDS_NAME=mds-$(hostname)-a \
+                        --ip=192.168.178.245 \
+                        --network=macvlan0 \
                         --name ceph_mds_a ceph/daemon mds
                     \end{lstlisting}   
                     
@@ -507,7 +506,7 @@
                 topology, the RTT\footnote{Round Trip Time} to a certain datacenter might be longer than desired. If all data is replicated
                 on datacenter granularity, a global scale data integrity is guaranteed as well as the possibly shortest response time.
 
-                \paragraph{In general} the failure mode should be as granular as possible but also as fine as financially feasable.
+                \paragraph{In general} the failure mode should be as granular as possible but also as fine as financially feasible.
                 In the context of the system architecture in the scope of this study (see section \ref{system:my-setup}), the fail mode will be on an OSD level.
                 Because my experimental setup consists of multiple disks and flash storages with different ages and levels of degradation.
                 However, the appropriate setting would be \textit{host}-level data replication.
@@ -546,14 +545,14 @@
 
                 The docker run commands are the same as above but executed in a specific order. One monitor node has to be launched first to create an initial cluster configuration.
                 Shortly thereafter follows a manager node. The next line deploys the keyring-file to the other bootstrap directories. Since all containers are deployed on a single machine, every node can access this keyring in its respective bootstrap directory. The script \textit{prepare.sh} and \textit{create.sh} executes the commands mentioned under the OSD part of section \ref*{config:docker} for each disk.
-                The next strep is the creation of the filesystem. According to the docker documentation the FS will be created upon launch of the MDS node with the \textit{CEPHFS\_CREATE=1} parameter defined. However this didn't work properly in my case. The lines with \textit{docker exec ...} execute a command within the denominated container (in this case 
+                The next step is the creation of the filesystem. According to the docker documentation the FS will be created upon launch of the MDS node with the \textit{CEPHFS\_CREATE=1} parameter defined. However this didn't work properly in my case. The lines with \textit{docker exec ...} execute a command within the denominated container (in this case 
                 \textit{ceph\_mon1}) from the host shell. These three commands create the data pools and the filesystem, which requires as metadata pool and a data pool \cite{CreateaCephfilesystem}.
-                The following lines are only the additional MON and MDS nodes being created. These are not strictly neccessary for the cluster to function but provide redundancy to secure the \textit{no single point of failure} design of CEPH.
+                The following lines are only the additional MON and MDS nodes being created. These are not strictly  necessary for the cluster to function but provide redundancy to secure the \textit{no single point of failure} design of CEPH.
 
     \section{System Analysis}
 
         To measure the performance of the cluster, I chose to use two tools: \textit{scbench} and \textit{mysqlslap}. Both tools give detailed insight into
-        the critical performances figures of such a cluster. Although there are seveal factors which are affecting overall performance, this test only provides a rather coarse overview of the system under test in general. For a more precise evaluation of the performance difference between docker and native ceph, parametres such as network latency, disk I/O and other system constraints have to be evaluated beforehand.
+        the critical performances figures of such a cluster. Although there are several factors which are affecting overall performance, this test only provides a rather coarse overview of the system under test in general. For a more precise evaluation of the performance difference between docker and native ceph, parametres such as network latency, disk I/O and other system constraints have to be evaluated beforehand.
 
         \subsection{SCBENCH} 
 
@@ -564,7 +563,8 @@
                 \item 30 seconds with 32 threads
                 \item 60 seconds with 64 threads
             \end{itemize}
-
+            
+            One thread can be considered as one client reading and writing data to the cluster.
             My goal is to load test the cluster in a way that eventually all caches and short term performance enhancements become saturated to see the stable long term performance. This test yields three different performance figures for read and write actions:
 
             \begin{itemize}
@@ -573,7 +573,8 @@
                 \item Latency
             \end{itemize}
 
-            The reading test was executed for sequential and random access of the data. However the tests for sequential read access didn't provide sufficient enough data to evaluate, therefore I will only show the results for random read, which is more important in the context of database operations anyway.
+            The reading test was executed for sequential and random access of the data. However the tests for sequential read access didn't provide sufficient enough data to evaluate because this test only yielded one whole dataset 
+            \cite{resultscbench}. Therefore I will only show the results for random read, which is more important in the context of database operations anyway.
             All graphs were created from the raw data, which scbench provides. The code to reproduce these results is available under \cite{ghceph}.
 
             \paragraph{Write performance}
@@ -621,7 +622,7 @@
                     \label{fig:read-speed}
                 \end{figure}   
 
-                The read spead starts at around 1700MB/s, which is multiple times more than the other more saturated tests were able to achieve. 
+                The read speed starts at around 1700MB/s, which is multiple times more than the other more saturated tests were able to achieve. 
                 Considered the hardware architecture of the cluster, this value is only really achievable with caching data in the RAM.
                 In fact the hardware requirements for a CEPH-Cluster demands 2GB of RAM minimum per OSD for that reason \cite{HardwareRecommendationsCephDocume}.
 
@@ -655,8 +656,8 @@
                     \item Total number of queries
                 \end{itemize}
 
-                I load tested the database on three different storage technologies to point out potential advanteages and disadvantages of ceph in contrast to a purely HDD and SSD based storage solution - both were discrete disks in this example. The mySQL-Server was running on a VM\footnote{Virtual Machine} with the CentOS8 distribution.
-                The VM ran on a physically seperate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image \cite{mysqlDockerHub}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS. Apart from giving the tests on the discrete disks a slight disadvantage, it doesn't really make a difference.
+                I load tested the database on three different storage technologies to point out potential advantages and disadvantages of ceph in contrast to a purely HDD and SSD based storage solution - both were discrete disks in this example. The mySQL-Server was running on a VM\footnote{Virtual Machine} with the CentOS8 distribution.
+                The VM ran on a physically separate machine, which had the storage mounted by either NFS\footnote{Network File Storage} or the ceph kernel-module. The HDD and SSD based load test was carried out using the official mySQL-Docker Image \cite{mysqlDockerHub}, because the configuration of different volumes is fairly unproblematic. This didn't work with the ceph kernel module for reasons which I was unable to resolve entirely. Therefore the load test on ceph as the underlying storage was carried out using the native mySQL distribution for CentOS. Apart from giving the tests on the discrete disks a slight disadvantage, it doesn't really make a difference.
 
                 To carry out the load test, I wrote the following script:
 
@@ -726,13 +727,13 @@
 
                 \paragraph{Missing OSD Network} As I explained in section \ref*{system:my-setup}, my setup doesn't have a dedicated network for the OSD traffic. It is possible that by using the same interface for server-client and OSD-OSD communication resulted in saturating the network interface, which isn't particularly high performance either. This is also a a good explanation for the IOWAIT kernel phenomenon.
 
-                \paragraph{Slow disks} I used USB pen drives on the ARMv7 host, which were exported as iSCSI devices. I is possible that these drives degraded due to the heavy read and write load under the constant load and therefore decreased drastically in performace.
+                \paragraph{Slow disks} I used USB pen drives on the ARMv7 host, which were exported as iSCSI devices. It is possible that these drives degraded due to the heavy read and write load under the constant load and therefore decreased drastically in performace.
 
                 One thing which is quite interesting though is that with ever increasing concurrent user load, the average time tends to decrease. This is a sign of an optimized access pattern for multiple data objects in the cluster.
 
             \subsection{Disk Failure}
 
-                One of my research goals defined in section\ref*{research-goal} was to examine the data integrity for database applications. During a dedicated loadtest I created a simulated drive failure by marking one or more OSDs as \textit{out}. This triggers a redistribution and replication of affected data objects as well as a change of the PG-Mapping. Ceph handled this process transparent for the client without any data loss.
+                One of my research goals defined in section \ref*{research-goal} was to examine the data integrity for database applications. During a dedicated loadtest I created a simulated drive failure by marking one or more OSDs as \textit{out}. This triggers a redistribution and replication of affected data objects as well as a change of the PG-Mapping. Ceph handled this process transparent for the client without any data loss.
 
                 The MGR-Node creates an output of the cluster state, where the state of the placement groups is logged:
 
@@ -747,7 +748,8 @@
                     ceph osd df tree
                 \end{lstlisting}
 
-                % Which brings up a general overview of the OSD status, which can be viewed here  \cite{osdoverviewtxtatmainc}. Interesting is the last line:
+                Which brings up a general overview of the OSD status, which can be viewed here
+                \cite{osdoverview}. Interesting here is the last line:
 
                 \begin{lstlisting}
                     MIN/MAX VAR: 0.66/1.36  STDDEV: 6.22
@@ -788,7 +790,7 @@
 
             There are several factors, which might have a bigger overall impact on the performance of the whole cluster, as I learned over the course of my reasearch. Optimization on these points might even be more effective in increasing performance such that the small performance penalty of running a containerized environment is worth the extra benefits. Possible optimizations could be:
 
-            \paragraph{Running the MDS-Damon on fast SSD-based storage} Since the MDS only serves small amounts of data but a large quantity of files, it is totally feasable to use smaller but faster SSDs. Best performance would be reached by using modern nVME drives. Within the cluster configuration the placement groups for the metadata can be configured to be stored on these special drives. It is best practice to have a limited amount of users per any given MDS, because having a fast responding MDS is crucial for good cluster performance.
+            \paragraph{Running the MDS-Damon on fast SSD-based storage} Since the MDS only serves small amounts of data but a large quantity of files, it is totally feasible to use smaller but faster SSDs. Best performance would be reached by using modern nVME drives. Within the cluster configuration the placement groups for the metadata can be configured to be stored on these special drives. It is best practice to have a limited amount of users per any given MDS, because having a fast responding MDS is crucial for good cluster performance.
 
             \paragraph{Use optimized Applications} Ceph does not only offer a filesystem, wich allows for the cluster to be used as virtual disk or block device but also libraries and API's to be directly implemented in clientside applications. The RedHat study\cite{redhatstudy} used an optimized mySQL distribution, which directly used the ceph kernel module to circumvent the filesystem bottleneck and yielded excellent results.
 
@@ -799,7 +801,7 @@
         To conclude my research goals pointed out in section \ref*{research-goal}, I found that like the study carried out by RedHat\cite{redhatstudy} a ceph cluster is well suited to be used as storage for a database in terms of data integrity. My test of removing OSDs during the mysql load test, showed that ceph handles failing disks in critical applications very well. However the fact that the OSDs are hosted within a containerized environment doesn't make a difference here. 
         
         However I was not able to show a performance gain for reasons stated in section \ref*{mysqlslap}.
-        On the administion part I found that using containers drastically descreased the work neccessary to set up a cluster. However it cost me more work upfront to figure out the correct configuration. Therefore I'd conclude it does make sense for a huge production environment, where administion is a bigger concern than clusters which are set up once and subsequently aren't touched again as it is the case in smaller or mid-sized deployments.
+        On the administration part I found that using containers drastically descreased the work  necessary to set up a cluster. However it cost me more work upfront to figure out the correct configuration. Therefore I'd conclude it does make sense for a huge production environment, where administration is a bigger concern than clusters which are set up once and subsequently aren't touched again as it is the case in smaller or mid-sized deployments.
       
     \bibliography{references}        
     \bibliographystyle{IEEEtran}
